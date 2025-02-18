@@ -1,24 +1,20 @@
-"use client";
+'use client'
 
-import TokenForm from "@/components/TokenForm";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import UserForm from "@/components/UserForm";
+import {WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Link from "next/link";
 
-export default function Home() {
-  const { connection } = useConnection();
-  const { wallet, publicKey, connected } = useWallet();
-
+export default function MyTokens() {
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-start">
       <section className="container space-y-6 max-w-7xl w-full mx-auto p-4  flex flex-col justify-center items-center rounded-xl my-16">
         <div className="flex flex-col justify-center items-start gap-3">
-          <h1 className="text-3xl font-bold">Create Solana Token</h1>
+          <h1 className="text-3xl font-bold">Your Tokens & NFTs</h1>
           <p className="tracking-wide leading-5">
-            Create your own Solana tokens effortlessly with our user-friendly
-            app! this tool simplifies the process of minting custom tokens on
-            the Solana network. Customize your token's name, symbol, supply, and
-            more, all within a few clicks.
+            Connect your wallet to view all your tokens and NFTs on the Solana
+            network. Whether you're on Mainnet or Devnet, this tool fetches and
+            displays your assets seamlessly. Explore your holdings, manage your
+            collections, and stay in control of your digital assets with ease.
           </p>
           <div className="flex gap-3">
             <WalletMultiButton
@@ -30,13 +26,13 @@ export default function Home() {
             />
             <Link
               className="  border border-neutral-500  transition-all duration-300 ease-in-out text-white font-bold p-3 rounded-xl "
-              href={"/mytokens"}
+              href={"/"}
             >
-              Your Assets
+              Create Token
             </Link>
           </div>
         </div>
-        <TokenForm />
+       <UserForm/>
       </section>
     </main>
   );
