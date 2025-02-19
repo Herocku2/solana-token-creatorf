@@ -8,10 +8,10 @@ export default function NetworkChanger() {
 
   return (
     <div className="flex justify-center items-center gap-2">
-      <button disabled={network === WalletAdapterNetwork.Devnet} className={` p-2 rounded-lg disabled:bg-transparent border border-slate-500 disabled:text-white bg-cyan-400 hover:bg-cyan-300 transition-all ease-in-out duration-500 text-black`} onClick={() => setNetwork(WalletAdapterNetwork.Devnet)}>
+      <button disabled={network === WalletAdapterNetwork.Devnet} className={` p-2 rounded-lg disabled:bg-neutral-700 disabled:border-neutral-700 disabled:text-white border border-neutral-500   hover:border-neutral-700 hover:text-white/70 transition-all ease-in-out duration-300 `} onClick={() => setNetwork(WalletAdapterNetwork.Devnet)}>
         {network === WalletAdapterNetwork.Devnet ? "Devnet Active" : "Use Devnet"}
       </button>
-      <button disabled={network === WalletAdapterNetwork.Mainnet} className={` p-2 rounded-lg disabled:bg-transparent border border-slate-500 disabled:text-white bg-lime-400 hover:bg-lime-300 transition-all ease-in-out duration-500 text-black`} onClick={() => setNetwork(WalletAdapterNetwork.Mainnet)}>
+      <button disabled={network === WalletAdapterNetwork.Mainnet} className={` p-2 rounded-lg disabled:bg-neutral-700 disabled:border-neutral-700 disabled:text-white border border-neutral-500   hover:border-neutral-700 hover:text-white/70 transition-all ease-in-out duration-300 `} onClick={() => setNetwork(WalletAdapterNetwork.Mainnet)}>
 
         {network === WalletAdapterNetwork.Mainnet ? "Mainnet Active" : "Use Mainnet"}
       </button>

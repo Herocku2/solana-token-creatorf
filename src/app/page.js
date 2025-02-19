@@ -5,6 +5,7 @@ import TokenForm from "@/components/TokenForm";
 
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { Image } from "lucide-react";
 import Link from "next/link";
 
 
@@ -31,16 +32,17 @@ export default function Home() {
                 borderRadius: 15,
                 background: "transparent",
                 border: "1px solid #737373",
+
               }}
             />
             <Link
-              className="  border border-neutral-500  transition-all duration-300 ease-in-out text-white font-bold p-3 rounded-xl "
+              className=" flex justify-center items-center  border border-neutral-500 hover:border-neutral-700 hover:text-white/70 transition-all duration-300 ease-in-out text-white font-bold p-3 rounded-xl "
               href={"/mytokens"}
             >
-              Your Assets
+              <Image className="w-4 h-4 mr-2" />  Your Assets
             </Link>
           </div>
-          <NetworkChanger/>
+          <NetworkChanger />
         </div>
         <TokenForm />
       </section>

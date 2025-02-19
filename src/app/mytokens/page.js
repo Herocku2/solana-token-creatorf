@@ -3,6 +3,7 @@
 import NetworkChanger from "@/components/NetworkChanger";
 import UserForm from "@/components/UserForm";
 import {WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { SquarePen } from "lucide-react";
 import Link from "next/link";
 
 export default function MyTokens() {
@@ -26,10 +27,10 @@ export default function MyTokens() {
               }}
             />
             <Link
-              className="  border border-neutral-500  transition-all duration-300 ease-in-out text-white font-bold p-3 rounded-xl "
+              className=" flex justify-center items-center border border-neutral-500 hover:border-neutral-700 hover:text-white/70 transition-all duration-300 ease-in-out text-white font-bold p-3 rounded-xl "
               href={"/"}
             >
-              Create Token
+             <SquarePen className="w-4 h-4 mr-2"/>  Create Token
             </Link>
           </div>
           <NetworkChanger/>

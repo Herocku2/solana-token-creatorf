@@ -33,6 +33,7 @@ import {
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import NetworkChanger from "./NetworkChanger";
+import { Send } from "lucide-react";
 
 export default function TokenForm() {
   const { connection } = useConnection();
@@ -423,14 +424,14 @@ export default function TokenForm() {
           <button
             disabled={isCreating}
             type="submit"
-            className="bg-neutral-500 disabled:bg-neutral-800 disabled:text-white/15 hover:bg-neutral-700 transition-all duration-300 ease-in-out text-white font-bold py-2 px-4 rounded-xl w-32 "
+            className="flex justify-center  border border-neutral-500 hover:border-neutral-700  disabled:border-neutral-800 hover:text-white/70 items-center  disabled:text-white/15 transition-all duration-300 ease-in-out text-white font-bold py-2 px-4 rounded-xl w-32 "
           >
-            Submit
+            <Send className="w-4 h-4 mr-2"/> Submit
           </button>
         </form>
       </div>
 
-      <div className="flex flex-col justify-center items-start overflow-hidden  bg-transparent text-white p-4 rounded-xl w-full max-w-4xl mt-5 border-neutral-500 border">
+      <div className="flex flex-col justify-center items-start  bg-transparent text-white p-4 rounded-xl w-full max-w-4xl mt-5 border-neutral-500 border">
         <div className="flex justify-start items-center gap-5 w-full">
           {formData.image ? (
             <Image
@@ -445,7 +446,7 @@ export default function TokenForm() {
           )}
           <div className="flex flex-col justify-center items-start">
             <div className="flex justify-center items-center gap-2">
-              <p className="text-lg font-semibold ">{formData.name}</p>
+              <p className="text-base md:text-lg font-semibold ">{formData.name}</p>
               {formData.symbol && (
                 <p className="text-sm">({formData.symbol})</p>
               )}
@@ -456,12 +457,13 @@ export default function TokenForm() {
                 {Number(formData.supply).toLocaleString("en-US")}
               </span>
             </p>
+
             <p className="text-xs">
               Decimals: <span className="text-sm">{formData.decimals}</span>
             </p>
           </div>
         </div>
-        <p className="text-xs mt-2">{formData.description}</p>
+        <p className="text-xs mt-2 break-all whitespace-normal line-clamp-3 ">{formData.description}</p>
       </div>
     </div>
   );
