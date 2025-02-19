@@ -1,5 +1,6 @@
 'use client'
 
+import NetworkChanger from "@/components/NetworkChanger";
 import UserForm from "@/components/UserForm";
 import {WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Link from "next/link";
@@ -31,6 +32,7 @@ export default function MyTokens() {
               Create Token
             </Link>
           </div>
+          <NetworkChanger/>
         </div>
        <UserForm/>
       </section>

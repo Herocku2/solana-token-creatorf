@@ -32,6 +32,7 @@ import {
   none,
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
+import NetworkChanger from "./NetworkChanger";
 
 export default function TokenForm() {
   const { connection } = useConnection();
@@ -243,8 +244,6 @@ export default function TokenForm() {
 
   return (
     <div className="w-full flex flex-col  justify-center items-center border-t-2 border-neutral-400 pt-4 gap-5">
-      <h1 className="text-2xl text-cyan-600">Current Network: {connection.rpcEndpoint == 'https://api.devnet.solana.com' ? "Devnet" : "Mainnet"}</h1>
-
       <div className="w-full max-w-4xl flex justify-start ">
         <form onSubmit={createToken} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

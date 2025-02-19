@@ -16,13 +16,15 @@ import {
 } from "@metaplex-foundation/umi-signer-wallet-adapters";
 import { generateSigner } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
+import NetworkChanger from "./NetworkChanger";
+import { useNetwork } from "@/provider/AppWalletProvider";
 
 export default function UserForm() {
   const { connection } = useConnection();
   const { wallet, connected } = useWallet();
   const [isFetching, setIsFetching] = useState(false);
-  const [userCluster, setUserCluster] = useState(null);
   const [userTokens, setUserTokens] = useState([]);
+  const { network } = useNetwork();
 
 
   const tokenTypes = {
@@ -50,13 +52,11 @@ export default function UserForm() {
       const mintSigner = generateSigner(umi);
       const userSigner = createSignerFromWalletAdapter(wallet.adapter);
       const userNetwork = umi.rpc.getCluster();
-      setUserCluster(userNetwork);
       const myTokens = await fetchAllDigitalAssetWithTokenByOwner(
         umi,
         umi.identity.publicKey
       );
 
-      console.log(myTokens)
       toast.dismiss();
       toast.success(`${myTokens.length} Assset fetched`)
       setUserTokens(myTokens);
@@ -69,16 +69,20 @@ export default function UserForm() {
     }
   };
 
+
+
   useEffect(() => {
-    if (userTokens.length == 0 && connected) {
-      getMyAssets();
-    }
-  }, [connected]);
+    setUserTokens([]);
+  }, [network]);
+
+
 
   return (
     <div className="w-full flex flex-col  justify-center items-center border-t-2 border-neutral-400 pt-4 gap-5">
-      <h1 className="text-2xl text-cyan-600">Current Network: {userCluster}</h1>
 
+      <button disabled={userTokens.length > 0 || isFetching} className={` p-2 rounded-xl disabled:bg-cyan-800 bg-cyan-400 hover:bg-cyan-300 transition-all ease-in-out duration-300 text-black`} onClick={() => getMyAssets()}>
+        Fetch Assets
+      </button>
       <div className="grid sm:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center items-center justify-center">
         {userTokens.length > 0 && userTokens.map((token, index) => (
           <div key={index} className="flex flex-col justify-center items-start gap-2 border border-neutral-500 p-4 rounded-xl w-full">
@@ -105,7 +109,7 @@ export default function UserForm() {
             <p className="text-sm md:text-base">
               Is Mutable:  {token?.metadata?.isMutable ? "Yes" : "No"}
             </p>
-            <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.metadata?.updateAuthority}${userCluster == 'devnet' && '?cluster=devnet'}`}>
+            <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.metadata?.updateAuthority}${network == 'devnet' && '?cluster=devnet'}`}>
               Update Authority
             </a>
 
@@ -114,7 +118,7 @@ export default function UserForm() {
                 Mint Authority: N/A
               </p>
             ) : (
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.mint?.mintAuthority?.value}${userCluster == 'devnet' && '?cluster=devnet'}`}>
+              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.mint?.mintAuthority?.value}${network == 'devnet' && '?cluster=devnet'}`}>
                 Mint Authority
               </a>
             )}
@@ -123,17 +127,17 @@ export default function UserForm() {
                 Freeze Authority: N/A
               </p>
             ) : (
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.mint?.freezeAuthority?.value}${userCluster == 'devnet' && '?cluster=devnet'}`}>
+              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.mint?.freezeAuthority?.value}${network == 'devnet' && '?cluster=devnet'}`}>
                 Freeze Authority
               </a>
             )}
 
 
             <div className="flex justify-center items-center gap-5">
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.token?.owner}${userCluster == 'devnet' && '?cluster=devnet'}`}>
+              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.token?.owner}${network == 'devnet' && '?cluster=devnet'}`}>
                 Owner
               </a>
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/token/${token?.token?.mint}${userCluster == 'devnet' && '?cluster=devnet'}`}>
+              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/token/${token?.token?.mint}${network == 'devnet' && '?cluster=devnet'}`}>
                 SolScan
               </a>
             </div>

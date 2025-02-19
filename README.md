@@ -27,6 +27,14 @@ Once you've connected your Solana wallet to the application, you can seamlessly 
 - Stay Organized: Manage and monitor your tokens and NFTs in one place.
 This functionality ensures that you always have full visibility into your Solana ecosystem, empowering you to make informed decisions about your digital assets.
 
+
+## Environment Variables
+**Important:** To use Mainnet without any error, please create a **.env file** in the root directory when running the development server. Add the following variable with your custom RPC URL for Mainnet:
+```bash
+NEXT_PUBLIC_SOLANA_MAINNET_RPC=https://your-custom-mainnet.rpc.url
+```
+Replace  ```https://your-custom-mainnet.rpc.url``` with your actual custom RPC endpoint for the Solana Mainnet.
+
 ## Prerequisites
 
 Before running this project locally, ensure you have the following installed:

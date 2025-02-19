@@ -1,13 +1,18 @@
 "use client";
 
+import NetworkChanger from "@/components/NetworkChanger";
 import TokenForm from "@/components/TokenForm";
+
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Link from "next/link";
 
+
 export default function Home() {
   const { connection } = useConnection();
   const { wallet, publicKey, connected } = useWallet();
+
+
 
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-start">
@@ -35,6 +40,7 @@ export default function Home() {
               Your Assets
             </Link>
           </div>
+          <NetworkChanger/>
         </div>
         <TokenForm />
       </section>
