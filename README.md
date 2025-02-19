@@ -6,7 +6,7 @@ With this tool, you can now also **view your assets (tokens and NFTs)** on both 
 
 ## Demo
 
-[Solana Token Creator](https://t.me/xerxescoder)
+[Solana Token Creator](https://solana-token-creator-xerxes.vercel.app/)
 
 
 ## Features

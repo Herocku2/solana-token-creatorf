@@ -70,7 +70,7 @@ export default function UserForm() {
   };
 
   useEffect(() => {
-    if (userTokens.length == 0) {
+    if (userTokens.length == 0 && connected) {
       getMyAssets();
     }
   }, [connected]);
