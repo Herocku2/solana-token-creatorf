@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ export default function TokenForm() {
   const { connection } = useConnection();
   const { wallet, connected } = useWallet();
   const [isCreating, setisCreating] = useState(false);
-
+  const [userCluster, setUserCluster] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     symbol: "",
@@ -123,6 +123,7 @@ export default function TokenForm() {
       const mintSigner = generateSigner(umi);
       const userSigner = createSignerFromWalletAdapter(wallet.adapter);
       const userNetwork = umi.rpc.getCluster();
+      setUserCluster(userNetwork)
       const finalSupply =
         Number(formData.supply) * 10 ** Number(formData.decimals);
 
@@ -131,7 +132,6 @@ export default function TokenForm() {
         duration: 4000,
       });
 
-      /* const myTokens = await fetchAllDigitalAssetWithTokenByOwner(umi, umi.identity.publicKey); */
 
       const umiImageFile = createGenericFile(formData.image, "image.jpeg", {
         tags: [{ name: "contentType", value: "image/jpeg" }],
@@ -207,9 +207,8 @@ export default function TokenForm() {
           <div className="flex flex-col gap-1">
             <div className="flex gap-2 mt-1">
               <a
-                href={`https://solscan.io/token/${mintSigner.publicKey.toString()}${
-                  userNetwork == "devnet" && "cluster=devnet"
-                }`}
+                href={`https://solscan.io/token/${mintSigner.publicKey.toString()}${userNetwork == "devnet" && "cluster=devnet"
+                  }`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline"
@@ -217,9 +216,8 @@ export default function TokenForm() {
                 View on Solscan
               </a>
               <a
-                href={`https://solscan.io/tx/${txHash}${
-                  userNetwork == "devnet" && "cluster=devnet"
-                }`}
+                href={`https://solscan.io/tx/${txHash}${userNetwork == "devnet" && "cluster=devnet"
+                  }`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline"
@@ -242,8 +240,11 @@ export default function TokenForm() {
     }
   };
 
+
   return (
     <div className="w-full flex flex-col  justify-center items-center border-t-2 border-neutral-400 pt-4 gap-5">
+      <h1 className="text-2xl text-cyan-600">Current Network: {connection.rpcEndpoint == 'https://api.devnet.solana.com' ? "Devnet" : "Mainnet"}</h1>
+
       <div className="w-full max-w-4xl flex justify-start ">
         <form onSubmit={createToken} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
