@@ -3,11 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply box-border;
-  }
+
   body {
-    @apply bg-[#202020] text-white
+    @apply bg-[#09090B] text-white
   }
 
 }
