@@ -29,11 +29,18 @@ This functionality ensures that you always have full visibility into your Solana
 
 
 ## Environment Variables
-**Important:** To use Mainnet without any error, please create a **.env file** in the root directory when running the development server. Add the following variable with your custom RPC URL for Mainnet:
+**Important:** To use Mainnet without any error, please use a custom rpc endpoint
+
+Also to use the uplaod function im using [FileBase](filebase.com)
+
+sign up and fill up the info
 ```bash
-NEXT_PUBLIC_SOLANA_MAINNET_RPC=https://your-custom-mainnet.rpc.url
+NEXT_PUBLIC_SOLANA_MAINNET_RPC=YOUR CUSTOM RPC
+NEXT_PUBLIC_FILEBASE_KEY=YOUR FILEBASE KEY
+NEXT_PUBLIC_FILEBASE_SECRET=YOUR FILEBASE SECRET
+NEXT_PUBLIC_FILEBASE_BUCKETNAME=YOUR FILEBASE BUCKETNAME
+NEXT_PUBLIC_FILEBASE_GATEWAY=https://YOURFIREBASEGATEWAY/ipfs
 ```
-Replace  ```https://your-custom-mainnet.rpc.url``` with your actual custom RPC endpoint for the Solana Mainnet.
 
 ## Prerequisites
 

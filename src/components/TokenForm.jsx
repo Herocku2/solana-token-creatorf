@@ -24,7 +24,6 @@ import {
   walletAdapterIdentity,
 } from "@metaplex-foundation/umi-signer-wallet-adapters";
 import {
-  createGenericFile,
   generateSigner,
   some,
   percentAmount,
@@ -34,6 +33,7 @@ import {
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import NetworkChanger from "./NetworkChanger";
 import { Send } from "lucide-react";
+import { uploadImageToS3, uploadJsonToS3 } from "@/helpers/filebase";
 
 export default function TokenForm() {
   const { connection } = useConnection();
@@ -46,10 +46,7 @@ export default function TokenForm() {
     description: "",
     decimals: 9,
     supply: 1000,
-    image: undefined,
-    mutable: false,
-    freeze_authority: false,
-    mint_authority: false,
+    image: undefined
   });
 
   const [errors, setErrors] = useState({});
@@ -69,12 +66,19 @@ export default function TokenForm() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name || formData.name.length < 4) {
-      newErrors.name = "Name must be at least 4 characters.";
+    if (!formData.name || formData.name.length < 1) {
+      newErrors.name = "Name must be at least 1 characters.";
     }
 
-    if (!formData.symbol || formData.symbol.length < 3) {
-      newErrors.symbol = "Symbol must be at least 3 characters.";
+    if (formData.name.length > 32) {
+      newErrors.name = "Name must be at max 32 characters.";
+    }
+
+    if (!formData.symbol || formData.symbol.length < 1) {
+      newErrors.symbol = "Symbol must be at least 1 characters.";
+    }
+    if (formData.symbol.length > 10) {
+      newErrors.symbol = "Symbol must be at max 10 characters.";
     }
 
     if (!formData.description || formData.description.length < 10) {
@@ -115,6 +119,7 @@ export default function TokenForm() {
     }
     setErrors({});
 
+
     try {
       setisCreating(true);
       toast.dismiss();
@@ -129,31 +134,34 @@ export default function TokenForm() {
       const finalSupply =
         Number(formData.supply) * 10 ** Number(formData.decimals);
 
-      toast.loading(`Creating ${formData.name} (${formData.symbol})...`, {
-        description: `Current Network: ${userNetwork}`,
-        duration: 4000,
-      });
 
 
-      const umiImageFile = createGenericFile(formData.image, "image.jpeg", {
-        tags: [{ name: "contentType", value: "image/jpeg" }],
-      });
+      toast.loading(`Uploading Metadata...`);
+      const uploadImage = await uploadImageToS3(`image-${formData.name}-${formData.symbol}`, formData.image)
+      const ImageCID = uploadImage;
 
       let tokenMetadata = {
         name: formData.name,
         symbol: formData.symbol,
         description: formData.description,
-        image: "",
+        image: ImageCID,
       };
+      const uploadMetadata = await uploadJsonToS3(tokenMetadata, `metadata-${formData.name}-${formData.symbol}`);
+      const metadataCID = uploadMetadata;
+
+      toast.dismiss();
+      toast.loading(`Creating ${formData.name} (${formData.symbol})...`, {
+        description: `Current Network: ${userNetwork}`,
+      });
 
       const createFungibleIx = createFungible(umi, {
         mint: mintSigner,
         name: formData.name,
         symbol: formData.symbol,
-        uri: "https://example.com/my-fungible.json",
+        uri: metadataCID,
         sellerFeeBasisPoints: percentAmount(0),
         decimals: some(formData.decimals),
-        isMutable: formData.mutable,
+        isMutable: false,
       });
 
       const createTokenIx = createTokenIfMissing(umi, {
@@ -187,29 +195,25 @@ export default function TokenForm() {
         newAuthority: null,
       });
 
-      let txBuilder = createFungibleIx
+      const txBuilder = await createFungibleIx
         .add(createTokenIx)
         .add(mintTokensIx)
+        .add(setFreezeAuthorityIx)
+        .add(setMintAuthorityIx)
         .add(
           addMemo(umi, {
-            memo: "Token Created by Solana Token Creator || https://google.com",
+            memo: "Token Created by Solana Token Creator || https://solana-token-creator-xerxes.vercel.app",
           })
-        );
-
-      if (!formData.mint_authority)
-        txBuilder = txBuilder.add(setMintAuthorityIx);
-      if (!formData.freeze_authority)
-        txBuilder = txBuilder.add(setFreezeAuthorityIx);
-      const finalTx = await txBuilder.sendAndConfirm(umi);
-
-      const txHash = base58.deserialize(finalTx.signature);
+        ).sendAndConfirm(umi);
+      const txHash = base58.deserialize(txBuilder.signature)[0];
+      console.log(txHash);
       toast.dismiss();
       toast.success("Token created successfully", {
         description: (
           <div className="flex flex-col gap-1">
             <div className="flex gap-2 mt-1">
               <a
-                href={`https://solscan.io/token/${mintSigner.publicKey.toString()}${userNetwork == "devnet" && "cluster=devnet"
+                href={`https://solscan.io/token/${mintSigner.publicKey.toString()}${userNetwork == "devnet" && "?cluster=devnet"
                   }`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -218,7 +222,7 @@ export default function TokenForm() {
                 View on Solscan
               </a>
               <a
-                href={`https://solscan.io/tx/${txHash}${userNetwork == "devnet" && "cluster=devnet"
+                href={`https://solscan.io/tx/${txHash}${userNetwork == "devnet" && "?cluster=devnet"
                   }`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -234,7 +238,6 @@ export default function TokenForm() {
       toast.dismiss();
       console.log(error);
       toast.error("Error", {
-        description: error.message,
         duration: 3000,
       });
     } finally {
@@ -245,7 +248,7 @@ export default function TokenForm() {
 
   return (
     <div className="w-full flex flex-col  justify-center items-center border-t-2 border-neutral-400 pt-4 gap-5">
-      <div className="w-full max-w-4xl flex justify-start ">
+      <div className="w-full max-w-4xl flex justify-center ">
         <form onSubmit={createToken} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col">
@@ -295,6 +298,8 @@ export default function TokenForm() {
                 onChange={handleChange}
                 placeholder="Decimals"
                 className="mt-1 px-3 py-2 border bg-transparent border-neutral-500 rounded-xl focus:outline-none focus:ring focus:ring-neutral-700 w-full"
+                min="0"
+                max="9"
               />
               {errors.decimals && (
                 <p className="text-red-500 text-xs mt-1">{errors.decimals}</p>
@@ -309,10 +314,11 @@ export default function TokenForm() {
               <input
                 type="number"
                 name="supply"
-                value={formData.supply}
+                value={Number(formData.supply)}
                 onChange={handleChange}
                 placeholder="Supply"
                 className="mt-1 px-3 py-2 border bg-transparent border-neutral-500 focus:outline-none focus:ring focus:ring-neutral-700 w-full rounded-xl"
+                min="0"
               />
               {errors.supply && (
                 <p className="text-red-500 text-xs mt-1">{errors.supply}</p>
@@ -359,66 +365,12 @@ export default function TokenForm() {
               recognizable. (Logo)
             </p>
           </div>
+          <p className="text-base md:text-lg text-gray-100 mt-1">
+            Tokens will be deployed with <b>mint</b> and <b>freeze</b> authority renounced and token metadata set to <b>immutable</b>, making the token immutable.
+            <br />
+            This is required for <b>DEX Trading and Liquidity Pools.</b>
+          </p>
 
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              name="mutable"
-              checked={formData.mutable}
-              onChange={handleChange}
-              className="w-4 h-4  bg-neutral-100 rounded border-neutral-500 focus:ring focus:ring-neutral-700"
-            />
-            <div>
-              <label className="text-sm font-medium text-white">Mutable</label>
-              <p className="text-xs text-gray-300 mt-1">
-                Set whether you wish to retain the ability to update the
-                metadata of your token. To register for DEX and liquidity pool
-                trading, programs normally require this to be set to false for
-                validation.
-              </p>
-            </div>
-          </div>
-
-          {/* Freeze Authority Field */}
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              name="freeze_authority"
-              checked={formData.freeze_authority}
-              onChange={handleChange}
-              className="w-4 h-4  bg-neutral-100 rounded border-neutral-500 focus:ring focus:ring-neutral-700"
-            />
-            <div>
-              <label className="text-sm font-medium text-white">
-                Freeze Authority
-              </label>
-              <p className="text-xs text-gray-300 mt-1">
-                Set whether you wish to retain the freeze authority of your
-                token. To register for DEX and liquidity pool trading, programs
-                normally require this to be set to false for validation.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              name="mint_authority"
-              checked={formData.mint_authority}
-              onChange={handleChange}
-              className="w-4 h-4  bg-neutral-100 rounded border-neutral-500 focus:ring focus:ring-neutral-700"
-            />
-            <div>
-              <label className="text-sm font-medium text-white">
-                Mint Authority
-              </label>
-              <p className="text-xs text-gray-300 mt-1">
-                Set whether you wish to retain the mint authority of your token.
-                To register for DEX and liquidity pool trading, programs
-                normally require this to be set to false for validation.
-              </p>
-            </div>
-          </div>
 
           {/* Submit Button */}
           <button
@@ -426,7 +378,7 @@ export default function TokenForm() {
             type="submit"
             className="flex justify-center  border border-neutral-500 hover:border-neutral-700  disabled:border-neutral-800 hover:text-white/70 items-center  disabled:text-white/15 transition-all duration-300 ease-in-out text-white font-bold py-2 px-4 rounded-xl w-32 "
           >
-            <Send className="w-4 h-4 mr-2"/> Submit
+            <Send className="w-4 h-4 mr-2" /> Submit
           </button>
         </form>
       </div>

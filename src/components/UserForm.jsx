@@ -75,7 +75,7 @@ export default function UserForm() {
     setUserTokens([]);
   }, [network]);
 
-
+console.log(userTokens);
 
   return (
     <div className="w-full flex flex-col  justify-center items-center border-t-2 border-neutral-400 pt-4 gap-5">
