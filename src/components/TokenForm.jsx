@@ -150,8 +150,8 @@ export default function TokenForm() {
       const metadataCID = uploadMetadata;
 
       toast.dismiss();
-      toast.loading(`Creating ${formData.name} (${formData.symbol})...`, {
-        description: `Current Network: ${userNetwork}`,
+      toast.loading(`Creating ${formData.name} (${formData.symbol}) on ${userNetwork}`, {
+        description: `Confirm Transaction on your wallet...`,
       });
 
       const createFungibleIx = createFungible(umi, {
