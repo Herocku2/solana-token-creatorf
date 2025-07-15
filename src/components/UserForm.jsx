@@ -18,6 +18,7 @@ import { generateSigner } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import NetworkChanger from "./NetworkChanger";
 import { useNetwork } from "@/provider/AppWalletProvider";
+import { Wallet } from "lucide-react";
 
 export default function UserForm() {
   const { connection } = useConnection();
@@ -78,75 +79,155 @@ export default function UserForm() {
 
 
   return (
-    <div className="w-full flex flex-col  justify-center items-center border-t-2 border-neutral-400 pt-4 gap-5">
-
-      <button disabled={userTokens.length > 0 || isFetching} className={` p-2 rounded-xl disabled:bg-cyan-800 bg-cyan-400 hover:bg-cyan-300 transition-all ease-in-out duration-300 text-black`} onClick={() => getMyAssets()}>
-        Fetch Assets
-      </button>
-      <div className="grid sm:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center items-center justify-center">
-        {userTokens.length > 0 && userTokens.map((token, index) => (
-          <div key={index} className="flex flex-col justify-center items-start gap-2 border border-neutral-500 p-4 rounded-xl w-full">
-            <p className="text-xs md:text-sm text-cyan-400 border-b w-full pb-2">
-              {tokenTypes[token?.metadata?.tokenStandard?.value]}
-            </p>
-            <p className="text-sm md:text-base">
-              {token?.metadata?.name} <span className="text-xs md:text-sm">({token?.metadata?.symbol})</span>
-            </p>
-
-            {tokenTypes[token?.metadata?.tokenStandard?.value] == "Token" ? (
-              <p className="text-sm md:text-base">
-                Supply: {Number(Number(token?.mint?.supply) / 10 ** Number(token?.mint?.decimals)).toLocaleString("en-US")}
-              </p>
-            ) : (
-              <p className="text-sm md:text-base">
-                Supply: {Number(token?.edition?.maxSupply.value).toLocaleString("en-US")}
-              </p>
-            )}
-
-            <p className="text-sm md:text-base">
-              Your Asset: {Number(Number(token?.token?.amount) / 10 ** Number(token?.mint?.decimals)).toLocaleString("en-US")}
-            </p>
-            <p className="text-sm md:text-base">
-              Is Mutable:  {token?.metadata?.isMutable ? "Yes" : "No"}
-            </p>
-            <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.metadata?.updateAuthority}${network == 'devnet' && '?cluster=devnet'}`}>
-              Update Authority
-            </a>
-
-            {!token?.mint?.mintAuthority?.value ? (
-              <p className="text-sm md:text-base">
-                Mint Authority: N/A
-              </p>
-            ) : (
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.mint?.mintAuthority?.value}${network == 'devnet' && '?cluster=devnet'}`}>
-                Mint Authority
-              </a>
-            )}
-            {!token?.mint?.freezeAuthority?.value ? (
-              <p className="text-sm md:text-base">
-                Freeze Authority: N/A
-              </p>
-            ) : (
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.mint?.freezeAuthority?.value}${network == 'devnet' && '?cluster=devnet'}`}>
-                Freeze Authority
-              </a>
-            )}
-
-
-            <div className="flex justify-center items-center gap-5">
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/address/${token?.token?.owner}${network == 'devnet' && '?cluster=devnet'}`}>
-                Owner
-              </a>
-              <a className="underline  hover:text-cyan-200 transition-all ease-in-out hover:underline-offset-4" target="_blank" href={`https://solscan.io/token/${token?.token?.mint}${network == 'devnet' && '?cluster=devnet'}`}>
-                SolScan
-              </a>
-            </div>
-          </div>
-
-
-        ))}
+    <div className="w-full flex flex-col justify-center items-center gap-8">
+      {/* Fetch Button */}
+      <div className="w-full max-w-md">
+        <button 
+          disabled={userTokens.length > 0 || isFetching} 
+          className={`w-full gradient-button flex items-center justify-center gap-3 py-4 text-lg font-semibold transition-all duration-300 ${
+            (userTokens.length > 0 || isFetching) 
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'hover:scale-105 hover:shadow-xl'
+          }`} 
+          onClick={() => getMyAssets()}
+        >
+          {isFetching ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              Fetching Assets...
+            </>
+          ) : userTokens.length > 0 ? (
+            <>
+              <span className="text-green-300">✓</span>
+              Assets Loaded
+            </>
+          ) : (
+            <>
+              <Wallet className="w-5 h-5" />
+              Fetch My Assets
+            </>
+          )}
+        </button>
       </div>
 
+      {/* Assets Grid */}
+      {userTokens.length > 0 && (
+        <div className="w-full">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg">
+              <span className="text-white font-bold">{userTokens.length}</span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">Assets Found</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {userTokens.map((token, index) => (
+              <div key={index} className="gradient-card p-6 hover:scale-[1.02] transition-all duration-300 group">
+                {/* Token Type Badge */}
+                <div className="flex items-center justify-between mb-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    tokenTypes[token?.metadata?.tokenStandard?.value] === 'Token' 
+                      ? 'bg-green-600/20 text-green-300 border border-green-500/30'
+                      : 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+                  }`}>
+                    {tokenTypes[token?.metadata?.tokenStandard?.value]}
+                  </span>
+                  
+                  <div className="flex items-center gap-1">
+                    {token?.metadata?.isMutable ? (
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full" title="Mutable"></span>
+                    ) : (
+                      <span className="w-2 h-2 bg-green-500 rounded-full" title="Immutable"></span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Token Info */}
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="text-lg font-bold text-white truncate">
+                      {token?.metadata?.name || 'Unknown Token'}
+                    </h4>
+                    {token?.metadata?.symbol && (
+                      <p className="text-gray-400 text-sm">
+                        Symbol: {token?.metadata?.symbol}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Supply Info */}
+                  <div className="space-y-2">
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Total Supply</p>
+                      <p className="text-white font-semibold">
+                        {tokenTypes[token?.metadata?.tokenStandard?.value] === "Token" ? 
+                          Number(Number(token?.mint?.supply) / 10 ** Number(token?.mint?.decimals)).toLocaleString("en-US") :
+                          Number(token?.edition?.maxSupply?.value || 1).toLocaleString("en-US")
+                        }
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Your Balance</p>
+                      <p className="text-cyan-300 font-semibold">
+                        {Number(Number(token?.token?.amount) / 10 ** Number(token?.mint?.decimals)).toLocaleString("en-US")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Authority Status */}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1">
+                      {!token?.mint?.mintAuthority?.value ? (
+                        <span className="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs border border-green-500/30">
+                          🔒 Mint Renounced
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-yellow-600/20 text-yellow-300 rounded text-xs border border-yellow-500/30">
+                          ⚠️ Mint Active
+                        </span>
+                      )}
+                      
+                      {!token?.mint?.freezeAuthority?.value ? (
+                        <span className="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs border border-green-500/30">
+                          ❄️ Freeze Renounced
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-yellow-600/20 text-yellow-300 rounded text-xs border border-yellow-500/30">
+                          ⚠️ Freeze Active
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Links */}
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-700/50">
+                    <a 
+                      className="text-cyan-400 hover:text-cyan-300 text-xs font-medium hover:underline transition-colors duration-200" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      href={`https://solscan.io/token/${token?.token?.mint}${network === 'devnet' ? '?cluster=devnet' : ''}`}
+                    >
+                      View on Solscan
+                    </a>
+                    
+                    <span className="text-gray-600">•</span>
+                    
+                    <a 
+                      className="text-cyan-400 hover:text-cyan-300 text-xs font-medium hover:underline transition-colors duration-200" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      href={`https://solscan.io/address/${token?.token?.owner}${network === 'devnet' ? '?cluster=devnet' : ''}`}
+                    >
+                      Owner Details
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
