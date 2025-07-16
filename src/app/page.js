@@ -1,22 +1,18 @@
 "use client";
 
+import { memo } from 'react';
 import NetworkChanger from "@/components/NetworkChanger";
 import TokenForm from "@/components/TokenForm";
-
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Image, Sparkles } from "lucide-react";
 import Link from "next/link";
 
-
-export default function Home() {
-  const { connection } = useConnection();
-  const { wallet, publicKey, connected } = useWallet();
-
+// Optimized Home component with performance improvements
+const Home = memo(function Home() {
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-start px-4 py-8">
       {/* Header */}
-      <div className="w-full max-w-6xl mx-auto mb-8">
+      <header className="w-full max-w-6xl mx-auto mb-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -24,15 +20,16 @@ export default function Home() {
             </div>
             <h1 className="text-2xl font-bold gradient-text">FlorkaFun Token Creator</h1>
           </div>
-          <div className="flex gap-3">
+          <nav>
             <Link
               className="gradient-button-secondary flex justify-center items-center px-4 py-2 text-sm font-medium"
               href={"/mytokens"}
+              prefetch={true}
             >
               <Image className="w-4 h-4 mr-2" />
               Your Assets
             </Link>
-          </div>
+          </nav>
         </div>
 
         {/* Subtitle */}
@@ -41,7 +38,7 @@ export default function Home() {
             <span className="gradient-text">FlorkaFun Token Creator</span>
           </h2>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Create SPL tokens on Solana with automatic fee handling via Supabase
+            Create SPL tokens on Solana with automatic fee handling
           </p>
         </div>
 
@@ -62,7 +59,7 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <NetworkChanger />
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
       <div className="w-full max-w-6xl mx-auto">
@@ -70,4 +67,6 @@ export default function Home() {
       </div>
     </main>
   );
-}
+});
+
+export default Home;

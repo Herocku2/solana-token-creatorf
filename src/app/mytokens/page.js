@@ -3,7 +3,7 @@
 import NetworkChanger from "@/components/NetworkChanger";
 import UserForm from "@/components/UserForm";
 import {WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { SquarePen, Wallet, Sparkles } from "lucide-react";
+import { SquarePen, Wallet, Sparkles, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function MyTokens() {
@@ -15,8 +15,21 @@ export default function MyTokens() {
         <div className="absolute top-40 left-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute bottom-20 right-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
+      
+      {/* Back to Home Button */}
+      <div className="w-full max-w-7xl mx-auto px-6 pt-6">
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 w-fit"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back to Home
+        </Link>
+      </div>
 
-      <section className="container space-y-8 max-w-7xl w-full mx-auto p-6 flex flex-col justify-center items-center my-12 relative z-10">
+      <section className="container space-y-8 max-w-7xl w-full mx-auto p-6 flex flex-col justify-center items-center my-8 relative z-10">
         {/* Hero Section */}
         <div className="gradient-card p-8 w-full max-w-4xl text-center space-y-6 animate-fade-in">
           <div className="flex items-center justify-center gap-3 mb-4">

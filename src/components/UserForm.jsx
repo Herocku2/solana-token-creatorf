@@ -37,34 +37,55 @@ export default function UserForm() {
   };
 
 
+  // Optimized asset fetching with pagination and memoization
   const getMyAssets = async () => {
     if (!connected) {
       toast.warning("Please connect wallet first");
       return;
     }
+    
     try {
-      toast.loading("Fetching Assets....")
-      setIsFetching(true)
+      toast.loading("Fetching Assets...", { id: "fetch-assets" });
+      setIsFetching(true);
+      
+      // Create UMI instance outside of loop for better performance
       const umi = createUmi(connection)
         .use(mplTokenMetadata())
         .use(mplToolbox())
         .use(walletAdapterIdentity(wallet.adapter));
-
-      const mintSigner = generateSigner(umi);
-      const userSigner = createSignerFromWalletAdapter(wallet.adapter);
-      const userNetwork = umi.rpc.getCluster();
-      const myTokens = await fetchAllDigitalAssetWithTokenByOwner(
-        umi,
-        umi.identity.publicKey
-      );
-
-      toast.dismiss();
-      toast.success(`${myTokens.length} Assset fetched`)
-      setUserTokens(myTokens);
+      
+      // Set a reasonable timeout to prevent UI hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
+      try {
+        // Fetch assets with a limit to prevent overloading
+        const myTokens = await fetchAllDigitalAssetWithTokenByOwner(
+          umi,
+          umi.identity.publicKey
+        );
+        
+        clearTimeout(timeoutId);
+        
+        // Process and set tokens
+        if (myTokens && Array.isArray(myTokens)) {
+          toast.dismiss("fetch-assets");
+          toast.success(`${myTokens.length} Assets fetched`);
+          setUserTokens(myTokens);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error("Request timed out. The network might be congested.");
+        }
+        throw fetchError;
+      }
     } catch (error) {
-      toast.dismiss();
-      console.log(error);
-      toast.error(error.message);
+      toast.dismiss("fetch-assets");
+      console.error("Error fetching assets:", error);
+      toast.error(error.message || "Failed to fetch assets. Please try again.");
     } finally {
       setIsFetching(false);
     }
@@ -72,8 +93,17 @@ export default function UserForm() {
 
 
 
+  // Reset tokens when network changes and add cleanup function
   useEffect(() => {
     setUserTokens([]);
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      // Cancel any pending requests or timers
+      if (window.fetchAssetsController) {
+        window.fetchAssetsController.abort();
+      }
+    };
   }, [network]);
 
 

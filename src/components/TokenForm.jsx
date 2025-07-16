@@ -108,137 +108,193 @@ export default function TokenForm() {
 
   const createToken = async (e) => {
     e.preventDefault();
+    
+    // Validation checks
     if (!connected) {
       toast.warning("Please connect wallet first");
       return;
     }
+    
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
+    
     setErrors({});
-
+    
+    // Create toast ID for better management
+    const toastId = "create-token-toast";
 
     try {
       setisCreating(true);
       toast.dismiss();
-      const umi = createUmi(connection)
-        .use(mplTokenMetadata())
-        .use(mplToolbox())
-        .use(walletAdapterIdentity(wallet.adapter));
+      
+      // Initialize UMI with proper error handling
+      let umi;
+      try {
+        umi = createUmi(connection)
+          .use(mplTokenMetadata())
+          .use(mplToolbox())
+          .use(walletAdapterIdentity(wallet.adapter));
+      } catch (umiError) {
+        console.error("Failed to initialize UMI:", umiError);
+        toast.error("Failed to initialize blockchain connection. Please try again.");
+        return;
+      }
+      
       const mintSigner = generateSigner(umi);
       const userSigner = createSignerFromWalletAdapter(wallet.adapter);
       const userNetwork = umi.rpc.getCluster();
-      setUserCluster(userNetwork)
-      const finalSupply =
-        Number(formData.supply) * 10 ** Number(formData.decimals);
+      setUserCluster(userNetwork);
+      
+      // Calculate supply with safe conversion
+      const finalSupply = Number.isFinite(formData.supply) && Number.isFinite(formData.decimals) 
+        ? Number(formData.supply) * 10 ** Number(formData.decimals)
+        : 0;
+      
+      if (finalSupply <= 0) {
+        throw new Error("Invalid supply calculation");
+      }
 
+      // Upload image with proper error handling
+      toast.loading(`Uploading Token Logo...`, { id: toastId });
+      let ImageCID;
+      try {
+        const imageName = `image-${formData.name.replace(/[^a-zA-Z0-9]/g, '')}-${formData.symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
+        ImageCID = await uploadImageToS3(imageName, formData.image);
+        if (!ImageCID) throw new Error("Failed to upload image");
+      } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
+        toast.error("Failed to upload token logo. Please try again.", { id: toastId });
+        throw new Error("Image upload failed");
+      }
 
+      // Create and upload metadata
+      toast.loading(`Uploading Token Metadata...`, { id: toastId });
+      let metadataCID;
+      try {
+        const tokenMetadata = {
+          name: formData.name,
+          symbol: formData.symbol,
+          description: formData.description,
+          image: ImageCID,
+        };
+        
+        const metadataName = `metadata-${formData.name.replace(/[^a-zA-Z0-9]/g, '')}-${formData.symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
+        metadataCID = await uploadJsonToS3(tokenMetadata, metadataName);
+        if (!metadataCID) throw new Error("Failed to upload metadata");
+      } catch (metadataError) {
+        console.error("Metadata upload error:", metadataError);
+        toast.error("Failed to upload token metadata. Please try again.", { id: toastId });
+        throw new Error("Metadata upload failed");
+      }
 
-      toast.loading(`Uploading Metadata...`);
-      const uploadImage = await uploadImageToS3(`image-${formData.name}-${formData.symbol}`, formData.image)
-      const ImageCID = uploadImage;
-
-      let tokenMetadata = {
-        name: formData.name,
-        symbol: formData.symbol,
-        description: formData.description,
-        image: ImageCID,
-      };
-      const uploadMetadata = await uploadJsonToS3(tokenMetadata, `metadata-${formData.name}-${formData.symbol}`);
-      const metadataCID = uploadMetadata;
-
-      toast.dismiss();
+      // Create token on blockchain
       toast.loading(`Creating ${formData.name} (${formData.symbol}) on ${userNetwork}`, {
+        id: toastId,
         description: `Confirm Transaction on your wallet...`,
       });
 
-      const createFungibleIx = createFungible(umi, {
-        mint: mintSigner,
-        name: formData.name,
-        symbol: formData.symbol,
-        uri: metadataCID,
-        sellerFeeBasisPoints: percentAmount(0),
-        decimals: some(formData.decimals),
-        isMutable: false,
-      });
+      try {
+        // Build transaction with all instructions
+        const createFungibleIx = createFungible(umi, {
+          mint: mintSigner,
+          name: formData.name,
+          symbol: formData.symbol,
+          uri: metadataCID,
+          sellerFeeBasisPoints: percentAmount(0),
+          decimals: some(formData.decimals),
+          isMutable: false,
+        });
 
-      const createTokenIx = createTokenIfMissing(umi, {
-        mint: mintSigner.publicKey,
-        owner: umi.identity.publicKey,
-        ataProgram: getSplAssociatedTokenProgramId(umi),
-      });
+        const createTokenIx = createTokenIfMissing(umi, {
+          mint: mintSigner.publicKey,
+          owner: umi.identity.publicKey,
+          ataProgram: getSplAssociatedTokenProgramId(umi),
+        });
 
-      const tokenInstance = findAssociatedTokenPda(umi, {
-        mint: mintSigner.publicKey,
-        owner: umi.identity.publicKey,
-      });
+        const tokenInstance = findAssociatedTokenPda(umi, {
+          mint: mintSigner.publicKey,
+          owner: umi.identity.publicKey,
+        });
 
-      const mintTokensIx = mintTokensTo(umi, {
-        mint: mintSigner.publicKey,
-        token: tokenInstance,
-        amount: BigInt(finalSupply),
-      });
+        const mintTokensIx = mintTokensTo(umi, {
+          mint: mintSigner.publicKey,
+          token: tokenInstance,
+          amount: BigInt(finalSupply),
+        });
 
-      const setFreezeAuthorityIx = setAuthority(umi, {
-        owned: mintSigner,
-        owner: userSigner,
-        authorityType: AuthorityType.FreezeAccount,
-        newAuthority: null,
-      });
+        const setFreezeAuthorityIx = setAuthority(umi, {
+          owned: mintSigner,
+          owner: userSigner,
+          authorityType: AuthorityType.FreezeAccount,
+          newAuthority: null,
+        });
 
-      const setMintAuthorityIx = setAuthority(umi, {
-        owned: mintSigner,
-        owner: userSigner,
-        authorityType: AuthorityType.MintTokens,
-        newAuthority: null,
-      });
+        const setMintAuthorityIx = setAuthority(umi, {
+          owned: mintSigner,
+          owner: userSigner,
+          authorityType: AuthorityType.MintTokens,
+          newAuthority: null,
+        });
 
-      const txBuilder = await createFungibleIx
-        .add(createTokenIx)
-        .add(mintTokensIx)
-        .add(setFreezeAuthorityIx)
-        .add(setMintAuthorityIx)
-        .add(
-          addMemo(umi, {
-            memo: "Token Created by Solana Token Creator || https://solana-token-creator-xerxes.vercel.app",
-          })
-        ).sendAndConfirm(umi);
-      const txHash = base58.deserialize(txBuilder.signature)[0];
-      console.log(txHash);
-      toast.dismiss();
-      toast.success("Token created successfully", {
-        description: (
-          <div className="flex flex-col gap-1">
-            <div className="flex gap-2 mt-1">
-              <a
-                href={`https://solscan.io/token/${mintSigner.publicKey.toString()}${userNetwork == "devnet" && "?cluster=devnet"
-                  }`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                View on Solscan
-              </a>
-              <a
-                href={`https://solscan.io/tx/${txHash}${userNetwork == "devnet" && "?cluster=devnet"
-                  }`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                Transaction Hash
-              </a>
+        // Set a timeout for the transaction
+        const txPromise = createFungibleIx
+          .add(createTokenIx)
+          .add(mintTokensIx)
+          .add(setFreezeAuthorityIx)
+          .add(setMintAuthorityIx)
+          .add(
+            addMemo(umi, {
+              memo: "Token Created by Solana Token Creator",
+            })
+          ).sendAndConfirm(umi);
+          
+        // Execute transaction with timeout
+        const txBuilder = await Promise.race([
+          txPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timed out")), 60000))
+        ]);
+        
+        const txHash = base58.deserialize(txBuilder.signature)[0];
+        
+        // Success notification
+        toast.dismiss(toastId);
+        toast.success("Token created successfully", {
+          description: (
+            <div className="flex flex-col gap-1">
+              <div className="flex gap-2 mt-1">
+                <a
+                  href={`https://solscan.io/token/${mintSigner.publicKey.toString()}${userNetwork === "devnet" ? "?cluster=devnet" : ""}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  View on Solscan
+                </a>
+                <a
+                  href={`https://solscan.io/tx/${txHash}${userNetwork === "devnet" ? "?cluster=devnet" : ""}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  Transaction Hash
+                </a>
+              </div>
             </div>
-          </div>
-        ),
-      });
+          ),
+        });
+      } catch (txError) {
+        console.error("Transaction error:", txError);
+        toast.error(txError.message || "Transaction failed. Please try again.", { id: toastId });
+        throw new Error("Transaction failed");
+      }
     } catch (error) {
-      toast.dismiss();
-      console.log(error);
-      toast.error("Error", {
-        duration: 3000,
+      toast.dismiss(toastId);
+      console.error("Token creation error:", error);
+      toast.error(error.message || "Failed to create token", {
+        duration: 5000,
       });
     } finally {
       setisCreating(false);
