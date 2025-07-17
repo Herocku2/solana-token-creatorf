@@ -140,7 +140,7 @@ export default function TokenForm() {
           .use(mplToolbox())
           .use(walletAdapterIdentity(wallet.adapter));
       } catch (umiError) {
-        console.error("Failed to initialize UMI:", umiError);
+        logger.error("Failed to initialize UMI", { error: umiError });
         toast.error("Failed to initialize blockchain connection. Please try again.");
         return;
       }
@@ -167,7 +167,7 @@ export default function TokenForm() {
         ImageCID = await uploadImageToS3(imageName, formData.image);
         if (!ImageCID) throw new Error("Failed to upload image");
       } catch (uploadError) {
-        console.error("Image upload error:", uploadError);
+        logger.error("Image upload error", { error: uploadError });
         toast.error("Failed to upload token logo. Please try again.", { id: toastId });
         throw new Error("Image upload failed");
       }
@@ -187,7 +187,7 @@ export default function TokenForm() {
         metadataCID = await uploadJsonToS3(tokenMetadata, metadataName);
         if (!metadataCID) throw new Error("Failed to upload metadata");
       } catch (metadataError) {
-        console.error("Metadata upload error:", metadataError);
+        logger.error("Metadata upload error", { error: metadataError });
         toast.error("Failed to upload token metadata. Please try again.", { id: toastId });
         throw new Error("Metadata upload failed");
       }
@@ -288,13 +288,13 @@ export default function TokenForm() {
           ),
         });
       } catch (txError) {
-        console.error("Transaction error:", txError);
+        logger.error("Transaction error", { error: txError });
         toast.error(txError.message || "Transaction failed. Please try again.", { id: toastId });
         throw new Error("Transaction failed");
       }
     } catch (error) {
       toast.dismiss(toastId);
-      console.error("Token creation error:", error);
+      logger.error("Token creation error", { error });
       toast.error(error.message || "Failed to create token", {
         duration: 5000,
       });

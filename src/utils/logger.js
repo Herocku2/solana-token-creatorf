@@ -55,6 +55,65 @@ function saveToStorage(logEntry) {
 }
 
 /**
+ * Función para hacer seguro un objeto para serialización
+ * @param {any} obj - Objeto a hacer seguro
+ * @returns {any} - Objeto seguro para serialización
+ */
+function makeSafeForSerialization(obj) {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  
+  // Si es un evento DOM, extraer propiedades relevantes
+  if (obj instanceof Event || (typeof obj === 'object' && obj.preventDefault && obj.stopPropagation)) {
+    return {
+      type: obj.type,
+      target: obj.target ? {
+        id: obj.target.id,
+        className: obj.target.className,
+        tagName: obj.target.tagName
+      } : 'no-target',
+      timeStamp: obj.timeStamp,
+      eventType: 'DOMEvent'
+    };
+  }
+  
+  // Si es un error, extraer propiedades relevantes
+  if (obj instanceof Error) {
+    return {
+      name: obj.name,
+      message: obj.message,
+      stack: obj.stack,
+      errorType: 'Error'
+    };
+  }
+  
+  // Si es un objeto normal, procesar recursivamente
+  if (typeof obj === 'object' && obj !== null) {
+    // Si es un array
+    if (Array.isArray(obj)) {
+      return obj.map(item => makeSafeForSerialization(item));
+    }
+    
+    // Si es un objeto regular
+    const safeObj = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        try {
+          safeObj[key] = makeSafeForSerialization(obj[key]);
+        } catch (e) {
+          safeObj[key] = `[Unserializable: ${e.message}]`;
+        }
+      }
+    }
+    return safeObj;
+  }
+  
+  // Para tipos primitivos, devolver tal cual
+  return obj;
+}
+
+/**
  * Registra un mensaje de log
  * @param {string} level - Nivel de log
  * @param {string} message - Mensaje de log
@@ -65,18 +124,21 @@ function log(level, message, data = {}) {
   const levels = Object.values(LOG_LEVELS);
   if (levels.indexOf(level) < levels.indexOf(config.minLevel)) return;
   
+  // Hacer seguro el objeto data para serialización
+  const safeData = makeSafeForSerialization(data);
+  
   // Crear entrada de log
   const timestamp = new Date().toISOString();
   const logEntry = {
     timestamp,
     level,
     message,
-    data
+    data: safeData
   };
   
   // Log a consola
   if (config.logToConsole && consoleMethods[level]) {
-    consoleMethods[level](`[${timestamp}] [${level.toUpperCase()}] ${message}`, data);
+    consoleMethods[level](`[${timestamp}] [${level.toUpperCase()}] ${message}`, safeData);
   }
   
   // Log a storage

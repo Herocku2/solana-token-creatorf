@@ -1,4 +1,5 @@
 import AWS from 'aws-sdk'
+import logger from '@/utils/logger'
 
 
 
@@ -36,7 +37,7 @@ export const uploadJsonToS3 = async (jsonObject, fileName) => {
     const CID = uplaod.$response.httpResponse.headers["x-amz-meta-cid"];
     return `${filebaseGateway}/${CID}`;
   } catch (error) {
-    console.error('Error uploading JSON:', error);
+    logger.error('Error uploading JSON', { error });
     throw new Error(`Failed to upload JSON: ${error.message}`);
   }
 };
@@ -56,7 +57,7 @@ export const uploadImageToS3 = async (fileName, file) => {
     const CID = uplaod.$response.httpResponse.headers["x-amz-meta-cid"];
     return `${filebaseGateway}/${CID}`;
   } catch (error) {
-    console.error('Error uploading image:', error);
+    logger.error('Error uploading image', { error });
     throw new Error(`Failed to upload image: ${error.message}`);
   }
 };
