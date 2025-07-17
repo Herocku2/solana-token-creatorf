@@ -1,37 +1,23 @@
 import { NextResponse } from 'next/server';
-import AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 
-// Configuración de Filebase con validación
-const filebaseKey = process.env.FILEBASE_KEY;
-const filebaseSecret = process.env.FILEBASE_SECRET;
-const filebaseBucket = process.env.FILEBASE_BUCKETNAME;
-const filebaseGateway = process.env.FILEBASE_GATEWAY;
+// Configuración de Pinata
+const pinataApiKey = process.env.PINATA_API_KEY;
+const pinataSecretApiKey = process.env.PINATA_SECRET_API_KEY;
+const pinataGateway = process.env.PINATA_GATEWAY || 'https://gateway.pinata.cloud/ipfs';
 
 // Validar que todas las variables de entorno estén presentes
-if (!filebaseKey || !filebaseSecret || !filebaseBucket || !filebaseGateway) {
-  console.error('Missing Filebase environment variables:', {
-    hasKey: !!filebaseKey,
-    hasSecret: !!filebaseSecret,
-    hasBucket: !!filebaseBucket,
-    hasGateway: !!filebaseGateway
+if (!pinataApiKey || !pinataSecretApiKey) {
+  console.error('Missing Pinata environment variables:', {
+    hasApiKey: !!pinataApiKey,
+    hasSecretKey: !!pinataSecretApiKey
   });
 }
-
-// Inicializar S3 client
-const s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  accessKeyId: filebaseKey,
-  secretAccessKey: filebaseSecret,
-  endpoint: 'https://s3.filebase.com',
-  region: 'us-east-1',
-  s3ForcePathStyle: true
-});
 
 export async function POST(request) {
   try {
     // Verificar variables de entorno
-    if (!filebaseKey || !filebaseSecret || !filebaseBucket || !filebaseGateway) {
+    if (!pinataApiKey || !pinataSecretApiKey) {
       console.error('Missing environment variables');
       return NextResponse.json(
         { error: 'Server configuration error' },
@@ -64,13 +50,13 @@ export async function POST(request) {
       }
       
       const jsonData = JSON.parse(jsonDataString);
-      const result = await uploadJsonToS3(jsonData, name);
+      const result = await uploadJsonToPinata(jsonData, name);
       console.log('JSON upload successful:', result);
       return NextResponse.json({ success: true, url: result });
     } else {
       // Convertir el archivo a buffer
       const buffer = Buffer.from(await file.arrayBuffer());
-      const result = await uploadFileToS3(buffer, name, file.type);
+      const result = await uploadFileToPinata(buffer, name, file.type);
       console.log('File upload successful:', result);
       return NextResponse.json({ success: true, url: result });
     }
@@ -83,35 +69,69 @@ export async function POST(request) {
   }
 }
 
-// Función para subir JSON a S3
-async function uploadJsonToS3(jsonObject, fileName) {
-  const jsonContent = JSON.stringify(jsonObject);
-  const body = Buffer.from(jsonContent);
-
-  const params = {
-    Bucket: filebaseBucket,
-    Key: fileName,
-    ContentType: 'application/json',
-    Body: body,
-    ACL: 'public-read',
+// Función para subir JSON a Pinata
+async function uploadJsonToPinata(jsonObject, fileName) {
+  const url = 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
+  
+  const data = {
+    pinataContent: jsonObject,
+    pinataMetadata: {
+      name: fileName,
+      keyvalues: {
+        type: 'metadata'
+      }
+    }
   };
 
-  const upload = await s3.putObject(params).promise();
-  const CID = upload.$response.httpResponse.headers["x-amz-meta-cid"];
-  return `${filebaseGateway}/${CID}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'pinata_api_key': pinataApiKey,
+      'pinata_secret_api_key': pinataSecretApiKey
+    },
+    body: JSON.stringify(data)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Pinata JSON upload failed: ${response.status} - ${errorText}`);
+  }
+
+  const result = await response.json();
+  return `${pinataGateway}/${result.IpfsHash}`;
 }
 
-// Función para subir archivos a S3
-async function uploadFileToS3(buffer, fileName, contentType) {
-  const params = {
-    Bucket: filebaseBucket,
-    Key: fileName,
-    ContentType: contentType,
-    Body: buffer,
-    ACL: 'public-read',
-  };
+// Función para subir archivos a Pinata
+async function uploadFileToPinata(buffer, fileName, contentType) {
+  const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+  
+  const formData = new FormData();
+  const blob = new Blob([buffer], { type: contentType });
+  formData.append('file', blob, fileName);
+  
+  const metadata = JSON.stringify({
+    name: fileName,
+    keyvalues: {
+      type: 'image'
+    }
+  });
+  formData.append('pinataMetadata', metadata);
 
-  const upload = await s3.putObject(params).promise();
-  const CID = upload.$response.httpResponse.headers["x-amz-meta-cid"];
-  return `${filebaseGateway}/${CID}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'pinata_api_key': pinataApiKey,
+      'pinata_secret_api_key': pinataSecretApiKey
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Pinata file upload failed: ${response.status} - ${errorText}`);
+  }
+
+  const result = await response.json();
+  return `${pinataGateway}/${result.IpfsHash}`;
 }
