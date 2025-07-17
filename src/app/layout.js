@@ -1,8 +1,9 @@
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import AppWalletProvider from "@/provider/AppWalletProvider";
-import ClientOnly from "@/components/ClientOnly";
-import { Toaster } from "sonner";
+import { metadata } from './metadata';
+
+// Importamos el componente cliente desde su ubicación correcta
+import ClientEntrypoint from "@/components/ClientEntrypoint";
 
 const montserrat = Montserrat({
   weight: ["400", "500", "600", "700"],
@@ -10,14 +11,8 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
-export const metadata = {
-  title: "Solana Token Creator",
-  description: "Create your own Solana token",
-  icons: {
-    icon: '/flower-logo.png',
-    apple: '/flower-logo.png',
-  },
-};
+// Exportamos la metadata desde el archivo separado
+export { metadata };
 
 export default function RootLayout({ children }) {
   return (
@@ -25,13 +20,10 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="icon" href="/flower-logo.png" />
       </head>
-      <body className={`${montserrat.variable}`}>
-        <ClientOnly fallback={<div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
-          <AppWalletProvider>
-            <Toaster position="top-center" />
-            {children}
-          </AppWalletProvider>
-        </ClientOnly>
+      <body className={montserrat.variable}>
+        <ClientEntrypoint>
+          {children}
+        </ClientEntrypoint>
       </body>
     </html>
   );

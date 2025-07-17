@@ -6,6 +6,13 @@ const nextConfig = {
     config.externals.push("pino-pretty", "encoding");
     return config;
   },
+  // Asegurarse de que PostCSS se procese correctamente
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
   // Compresión para mejorar el rendimiento
   compress: true,
   // Optimización de imágenes

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, createContext, useContext, useCallback } from "react";
+import React, { useMemo, useState, createContext, useContext, useCallback, useEffect } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
@@ -32,24 +32,22 @@ const connectionConfig = {
 };
 
 export default function AppWalletProvider({ children }) {
-  // Network state with persistent storage
-  const [network, setNetworkState] = useState(() => {
-    // Try to get from localStorage if available
-    if (typeof window !== 'undefined') {
-      const savedNetwork = localStorage.getItem('solana-network');
-      return savedNetwork === WalletAdapterNetwork.Mainnet 
-        ? WalletAdapterNetwork.Mainnet 
-        : WalletAdapterNetwork.Devnet;
+  // Default to Devnet initially to avoid hydration mismatch
+  const [network, setNetworkState] = useState(WalletAdapterNetwork.Devnet);
+  
+  // Handle localStorage in useEffect to avoid hydration issues
+  useEffect(() => {
+    // Only access localStorage after component is mounted on client
+    const savedNetwork = localStorage.getItem('solana-network');
+    if (savedNetwork === WalletAdapterNetwork.Mainnet) {
+      setNetworkState(WalletAdapterNetwork.Mainnet);
     }
-    return WalletAdapterNetwork.Devnet;
-  });
+  }, []);
 
   // Memoized network setter with localStorage persistence
   const setNetwork = useCallback((newNetwork) => {
     setNetworkState(newNetwork);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('solana-network', newNetwork);
-    }
+    localStorage.setItem('solana-network', newNetwork);
   }, []);
 
   // Memoized endpoint based on selected network with fallback

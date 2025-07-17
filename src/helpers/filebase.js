@@ -1,61 +1,56 @@
-import AWS from 'aws-sdk'
-import logger from '@/utils/logger'
+import logger from '@/utils/logger';
 
-
-
-const filebaseKey = process.env.NEXT_PUBLIC_FILEBASE_KEY;
-const filebaseSecret = process.env.NEXT_PUBLIC_FILEBASE_SECRET
-const filebaseBucket = process.env.NEXT_PUBLIC_FILEBASE_BUCKETNAME
-const filebaseGateway = process.env.NEXT_PUBLIC_FILEBASE_GATEWAY
-
-const s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  accessKeyId: filebaseKey,
-  secretAccessKey: filebaseSecret,
-  endpoint: 'https://s3.filebase.com',
-  region: 'us-east-1',
-  s3ForcePathStyle: true
-});
-
-
-
-
+// Función para subir JSON a través de nuestra API
 export const uploadJsonToS3 = async (jsonObject, fileName) => {
   try {
-    const jsonContent = JSON.stringify(jsonObject);
-    const body = Buffer.from(jsonContent);
+    // Crear FormData para la solicitud
+    const formData = new FormData();
+    formData.append('type', 'json');
+    formData.append('name', fileName);
+    formData.append('jsonData', JSON.stringify(jsonObject));
+    formData.append('file', new Blob([JSON.stringify(jsonObject)], { type: 'application/json' }));
 
+    // Enviar solicitud a nuestra API
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
 
-    const params = {
-      Bucket: filebaseBucket,
-      Key: fileName,
-      ContentType: 'application/json',
-      Body: body, 
-      ACL: 'public-read',
-    };
-    const uplaod = await s3.putObject(params).promise();
-    const CID = uplaod.$response.httpResponse.headers["x-amz-meta-cid"];
-    return `${filebaseGateway}/${CID}`;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error uploading JSON');
+    }
+
+    const data = await response.json();
+    return data.url;
   } catch (error) {
     logger.error('Error uploading JSON', { error });
     throw new Error(`Failed to upload JSON: ${error.message}`);
   }
 };
 
+// Función para subir imágenes a través de nuestra API
 export const uploadImageToS3 = async (fileName, file) => {
   try {
+    // Crear FormData para la solicitud
+    const formData = new FormData();
+    formData.append('type', 'image');
+    formData.append('name', fileName);
+    formData.append('file', file);
 
-    const params = {
-      Bucket: filebaseBucket, 
-      Key: fileName,
-      ContentType: file.type,
-      Body: file,
-      ACL: 'public-read',
-    };
+    // Enviar solicitud a nuestra API
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
 
-    const uplaod = await s3.putObject(params).promise();
-    const CID = uplaod.$response.httpResponse.headers["x-amz-meta-cid"];
-    return `${filebaseGateway}/${CID}`;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error uploading image');
+    }
+
+    const data = await response.json();
+    return data.url;
   } catch (error) {
     logger.error('Error uploading image', { error });
     throw new Error(`Failed to upload image: ${error.message}`);

@@ -40,7 +40,7 @@ const TokenForm = dynamic(() => import("@/components/TokenForm"), {
 const Home = memo(function Home() {
   // Log page visit
   logger.info('Home page visited');
-  
+
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-start px-4 py-8">
       {/* Header */}
