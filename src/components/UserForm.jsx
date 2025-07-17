@@ -221,4 +221,6 @@ const UserForm = memo(function UserForm() {
       )}
     </div>
   );
-}
+});
+
+export default UserForm;
