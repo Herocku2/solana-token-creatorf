@@ -106,10 +106,17 @@ async function uploadJsonToPinata(jsonObject, fileName) {
 async function uploadFileToPinata(buffer, fileName, contentType) {
   const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
   
+  // Crear FormData usando la implementación de Node.js
+  const FormData = require('form-data');
   const formData = new FormData();
-  const blob = new Blob([buffer], { type: contentType });
-  formData.append('file', blob, fileName);
   
+  // Agregar el archivo como buffer
+  formData.append('file', buffer, {
+    filename: fileName,
+    contentType: contentType
+  });
+  
+  // Agregar metadata
   const metadata = JSON.stringify({
     name: fileName,
     keyvalues: {
@@ -121,6 +128,7 @@ async function uploadFileToPinata(buffer, fileName, contentType) {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
+      ...formData.getHeaders(),
       'pinata_api_key': pinataApiKey,
       'pinata_secret_api_key': pinataSecretApiKey
     },
