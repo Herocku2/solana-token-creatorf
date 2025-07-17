@@ -102,19 +102,22 @@ async function uploadJsonToPinata(jsonObject, fileName) {
   return `${pinataGateway}/${result.IpfsHash}`;
 }
 
-// Función para subir archivos a Pinata
+// Función para subir archivos a Pinata usando multipart/form-data manual
 async function uploadFileToPinata(buffer, fileName, contentType) {
   const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
   
-  // Crear FormData usando la implementación de Node.js
-  const FormData = require('form-data');
-  const formData = new FormData();
+  // Crear boundary para multipart/form-data
+  const boundary = `----formdata-pinata-${Date.now()}`;
   
-  // Agregar el archivo como buffer
-  formData.append('file', buffer, {
-    filename: fileName,
-    contentType: contentType
-  });
+  // Crear el cuerpo multipart manualmente
+  const chunks = [];
+  
+  // Agregar archivo
+  chunks.push(`--${boundary}\r\n`);
+  chunks.push(`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n`);
+  chunks.push(`Content-Type: ${contentType}\r\n\r\n`);
+  chunks.push(buffer);
+  chunks.push('\r\n');
   
   // Agregar metadata
   const metadata = JSON.stringify({
@@ -123,20 +126,34 @@ async function uploadFileToPinata(buffer, fileName, contentType) {
       type: 'image'
     }
   });
-  formData.append('pinataMetadata', metadata);
+  chunks.push(`--${boundary}\r\n`);
+  chunks.push(`Content-Disposition: form-data; name="pinataMetadata"\r\n\r\n`);
+  chunks.push(metadata);
+  chunks.push('\r\n');
+  
+  // Cerrar boundary
+  chunks.push(`--${boundary}--\r\n`);
+  
+  // Combinar todos los chunks
+  const body = Buffer.concat(
+    chunks.map(chunk => 
+      typeof chunk === 'string' ? Buffer.from(chunk, 'utf8') : chunk
+    )
+  );
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      ...formData.getHeaders(),
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
       'pinata_api_key': pinataApiKey,
       'pinata_secret_api_key': pinataSecretApiKey
     },
-    body: formData
+    body: body
   });
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('Pinata upload error:', errorText);
     throw new Error(`Pinata file upload failed: ${response.status} - ${errorText}`);
   }
 
