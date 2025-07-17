@@ -27,7 +27,8 @@
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^1.7.4"
+    "sonner": "^1.7.4",
+    "swr": "^2.3.4"
   },
   "devDependencies": {
     "postcss": "^8",

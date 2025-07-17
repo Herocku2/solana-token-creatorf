@@ -1,33 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { memo, useEffect } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
-import {
-  fetchAllDigitalAssetWithTokenByOwner,
-  mplTokenMetadata,
-} from "@metaplex-foundation/mpl-token-metadata";
-import { mplToolbox } from "@metaplex-foundation/mpl-toolbox";
-import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import {
-  createSignerFromWalletAdapter,
-  walletAdapterIdentity,
-} from "@metaplex-foundation/umi-signer-wallet-adapters";
-import { generateSigner } from "@metaplex-foundation/umi";
-import { base58 } from "@metaplex-foundation/umi/serializers";
-import NetworkChanger from "./NetworkChanger";
 import { useNetwork } from "@/provider/AppWalletProvider";
-import { Wallet } from "lucide-react";
+import { Wallet, Shield, AlertTriangle } from "lucide-react";
+import { useTokens } from "@/hooks/useTokens";
+import logger from '@/utils/logger';
+import SafeContent from "@/components/SafeContent";
 
-export default function UserForm() {
-  const { connection } = useConnection();
-  const { wallet, connected } = useWallet();
-  const [isFetching, setIsFetching] = useState(false);
-  const [userTokens, setUserTokens] = useState([]);
+// Memoized component for better performance
+const UserForm = memo(function UserForm() {
+  const { connected } = useWallet();
   const { network } = useNetwork();
+  
+  // Usar el hook optimizado para tokens con caché
+  const { 
+    tokens: userTokens, 
+    isLoading: isFetching, 
+    fetchTokens,
+    error: tokensError
+  } = useTokens();
 
-
+  // Token type mapping
   const tokenTypes = {
     0: "NFT",
     1: "FungibleAsset",
@@ -36,77 +31,41 @@ export default function UserForm() {
     4: "ProgrammableNonFungible",
   };
 
-
-  // Optimized asset fetching with pagination and memoization
+  // Optimized asset fetching using the hook
   const getMyAssets = async () => {
     if (!connected) {
       toast.warning("Please connect wallet first");
       return;
     }
     
+    toast.loading("Fetching Assets...", { id: "fetch-assets" });
+    
     try {
-      toast.loading("Fetching Assets...", { id: "fetch-assets" });
-      setIsFetching(true);
+      logger.info("Fetching user assets", { network });
+      const result = await fetchTokens();
       
-      // Create UMI instance outside of loop for better performance
-      const umi = createUmi(connection)
-        .use(mplTokenMetadata())
-        .use(mplToolbox())
-        .use(walletAdapterIdentity(wallet.adapter));
-      
-      // Set a reasonable timeout to prevent UI hanging
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-      
-      try {
-        // Fetch assets with a limit to prevent overloading
-        const myTokens = await fetchAllDigitalAssetWithTokenByOwner(
-          umi,
-          umi.identity.publicKey
-        );
-        
-        clearTimeout(timeoutId);
-        
-        // Process and set tokens
-        if (myTokens && Array.isArray(myTokens)) {
-          toast.dismiss("fetch-assets");
-          toast.success(`${myTokens.length} Assets fetched`);
-          setUserTokens(myTokens);
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (fetchError) {
-        clearTimeout(timeoutId);
-        if (fetchError.name === 'AbortError') {
-          throw new Error("Request timed out. The network might be congested.");
-        }
-        throw fetchError;
+      if (result?.success) {
+        toast.dismiss("fetch-assets");
+        toast.success(`${userTokens.length} Assets fetched`);
+        logger.info("Assets fetched successfully", { count: userTokens.length });
+      } else {
+        throw new Error(result?.message || "Failed to fetch assets");
       }
     } catch (error) {
       toast.dismiss("fetch-assets");
-      console.error("Error fetching assets:", error);
+      logger.error("Error fetching assets", { error: error.message });
       toast.error(error.message || "Failed to fetch assets. Please try again.");
-    } finally {
-      setIsFetching(false);
     }
   };
 
 
 
-  // Reset tokens when network changes and add cleanup function
+  // Log errors if any
   useEffect(() => {
-    setUserTokens([]);
-    
-    // Cleanup function to prevent memory leaks
-    return () => {
-      // Cancel any pending requests or timers
-      if (window.fetchAssetsController) {
-        window.fetchAssetsController.abort();
-      }
-    };
-  }, [network]);
-
-
+    if (tokensError) {
+      logger.error('Token fetch error:', { error: tokensError });
+    }
+  }, [tokensError]);
 
   return (
     <div className="w-full flex flex-col justify-center items-center gap-8">
@@ -120,21 +79,23 @@ export default function UserForm() {
               : 'hover:scale-105 hover:shadow-xl'
           }`} 
           onClick={() => getMyAssets()}
+          aria-label="Fetch my assets"
         >
           {isFetching ? (
             <>
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              Fetching Assets...
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
+              <span>Fetching Assets...</span>
+              <span className="sr-only">Loading assets, please wait</span>
             </>
           ) : userTokens.length > 0 ? (
             <>
-              <span className="text-green-300">✓</span>
-              Assets Loaded
+              <span className="text-green-300" aria-hidden="true">✓</span>
+              <span>Assets Loaded ({userTokens.length})</span>
             </>
           ) : (
             <>
-              <Wallet className="w-5 h-5" />
-              Fetch My Assets
+              <Wallet className="w-5 h-5" aria-hidden="true" />
+              <span>Fetch My Assets</span>
             </>
           )}
         </button>
@@ -176,11 +137,11 @@ export default function UserForm() {
                 <div className="space-y-3">
                   <div>
                     <h4 className="text-lg font-bold text-white truncate">
-                      {token?.metadata?.name || 'Unknown Token'}
+                      <SafeContent content={token?.metadata?.name || 'Unknown Token'} />
                     </h4>
                     {token?.metadata?.symbol && (
                       <p className="text-gray-400 text-sm">
-                        Symbol: {token?.metadata?.symbol}
+                        Symbol: <SafeContent content={token?.metadata?.symbol} />
                       </p>
                     )}
                   </div>

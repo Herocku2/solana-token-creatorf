@@ -6,6 +6,49 @@ const nextConfig = {
     config.externals.push("pino-pretty", "encoding");
     return config;
   },
+  // Compresión para mejorar el rendimiento
+  compress: true,
+  // Optimización de imágenes
+  images: {
+    domains: ['ipfs.filebase.io'],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+  },
+  // Headers de seguridad
+  async headers() {
+    return [
+      {
+        // Aplicar a todas las rutas
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' https://*.solana.com https://api.mainnet-beta.solana.com https://api.devnet.solana.com https://s3.filebase.com; img-src 'self' data: https://*.filebase.io blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'none';"
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          }
+        ]
+      }
+    ];
+  }
 };
 
 export default nextConfig;

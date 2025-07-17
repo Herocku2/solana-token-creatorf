@@ -34,6 +34,8 @@ import { base58 } from "@metaplex-foundation/umi/serializers";
 import NetworkChanger from "./NetworkChanger";
 import { Send, Upload, Coins } from "lucide-react";
 import { uploadImageToS3, uploadJsonToS3 } from "@/helpers/filebase";
+import SafeContent from "@/components/SafeContent";
+import logger from "@/utils/logger";
 
 export default function TokenForm() {
   const { connection } = useConnection();
@@ -524,6 +526,8 @@ export default function TokenForm() {
                     width={120}
                     height={120}
                     className="object-cover rounded-2xl border-2 border-gray-600/50"
+                    loading="eager"
+                    priority={true}
                   />
                   <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>

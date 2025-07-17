@@ -1,6 +1,7 @@
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import AppWalletProvider from "@/provider/AppWalletProvider";
+import ClientOnly from "@/components/ClientOnly";
 import { Toaster } from "sonner";
 
 const montserrat = Montserrat({
@@ -25,10 +26,12 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/flower-logo.png" />
       </head>
       <body className={`${montserrat.variable}`}>
-        <AppWalletProvider>
-          <Toaster position="top-center" />
-          {children}
-        </AppWalletProvider>
+        <ClientOnly fallback={<div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+          <AppWalletProvider>
+            <Toaster position="top-center" />
+            {children}
+          </AppWalletProvider>
+        </ClientOnly>
       </body>
     </html>
   );

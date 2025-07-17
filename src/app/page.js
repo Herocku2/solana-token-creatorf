@@ -1,14 +1,46 @@
 "use client";
 
-import { memo } from 'react';
-import NetworkChanger from "@/components/NetworkChanger";
-import TokenForm from "@/components/TokenForm";
+import { memo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Image, Sparkles } from "lucide-react";
 import Link from "next/link";
+import logger from '@/utils/logger';
+
+// Importar componentes con lazy loading
+const NetworkChanger = dynamic(() => import("@/components/NetworkChanger"), {
+  loading: () => <div className="h-10 w-48 bg-gray-700/50 animate-pulse rounded-lg"></div>,
+  ssr: false
+});
+
+const TokenForm = dynamic(() => import("@/components/TokenForm"), {
+  loading: () => (
+    <div className="w-full max-w-5xl mx-auto">
+      <div className="gradient-card p-8 animate-pulse">
+        <div className="h-8 bg-gray-700/50 w-64 rounded-lg mb-8"></div>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-24 bg-gray-700/50 rounded-lg"></div>
+            <div className="h-24 bg-gray-700/50 rounded-lg"></div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-24 bg-gray-700/50 rounded-lg"></div>
+            <div className="h-24 bg-gray-700/50 rounded-lg"></div>
+          </div>
+          <div className="h-32 bg-gray-700/50 rounded-lg"></div>
+          <div className="h-24 bg-gray-700/50 rounded-lg"></div>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
 
 // Optimized Home component with performance improvements
 const Home = memo(function Home() {
+  // Log page visit
+  logger.info('Home page visited');
+  
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-start px-4 py-8">
       {/* Header */}
@@ -57,13 +89,17 @@ const Home = memo(function Home() {
 
         {/* Network Changer */}
         <div className="flex justify-center mb-8">
-          <NetworkChanger />
+          <Suspense fallback={<div className="h-10 w-48 bg-gray-700/50 animate-pulse rounded-lg"></div>}>
+            <NetworkChanger />
+          </Suspense>
         </div>
       </header>
 
       {/* Main Content */}
       <div className="w-full max-w-6xl mx-auto">
-        <TokenForm />
+        <Suspense fallback={<div className="h-96 w-full bg-gray-800/30 animate-pulse rounded-xl"></div>}>
+          <TokenForm />
+        </Suspense>
       </div>
     </main>
   );

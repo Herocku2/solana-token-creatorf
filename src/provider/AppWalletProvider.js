@@ -18,11 +18,8 @@ export const NetworkContext = createContext({
 // Custom hook for accessing network context
 export const useNetwork = () => useContext(NetworkContext);
 
-// RPC endpoints configuration
-const CUSTOM_RPC_ENDPOINTS = {
-  [WalletAdapterNetwork.Devnet]: process.env.NEXT_PUBLIC_SOLANA_DEVNET_RPC || "",
-  [WalletAdapterNetwork.Mainnet]: process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC || "",
-};
+// Importar utilidad de endpoints
+import { getBestEndpoint, SOLANA_ENDPOINTS } from '@/utils/solanaEndpoints';
 
 // Connection config with better performance settings
 const connectionConfig = {
@@ -55,10 +52,11 @@ export default function AppWalletProvider({ children }) {
     }
   }, []);
 
-  // Memoized endpoint based on selected network
+  // Memoized endpoint based on selected network with fallback
   const endpoint = useMemo(() => {
-    const customEndpoint = CUSTOM_RPC_ENDPOINTS[network];
-    return customEndpoint || clusterApiUrl(network);
+    // Usar el primer endpoint de la lista como predeterminado
+    // El sistema de fallback se encargará de cambiar si es necesario
+    return SOLANA_ENDPOINTS[network]?.[0] || clusterApiUrl(network);
   }, [network]);
 
   // Memoized wallet adapters - only recreate when network changes
