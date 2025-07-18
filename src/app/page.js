@@ -3,9 +3,8 @@
 import { memo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Image as LucideImage, Sparkles } from "lucide-react";
+import { Image as LucideImage } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import logger from '@/utils/logger';
 
 // Importar componentes con lazy loading
@@ -50,7 +49,7 @@ const Home = memo(function Home() {
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center">
               <img 
-                src="/pink-flower.png" 
+                src="/flower-logo.png" 
                 alt="FlorkaFun Logo" 
                 width={28} 
                 height={28} 
@@ -115,7 +114,7 @@ const Home = memo(function Home() {
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <div className="w-6 h-6 flex items-center justify-center">
               <img 
-                src="/pink-flower.png" 
+                src="/flower-logo.png" 
                 alt="FlorkaFun Logo" 
                 width={20} 
                 height={20} 
