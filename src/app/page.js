@@ -3,8 +3,9 @@
 import { memo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Image, Sparkles } from "lucide-react";
+import { Image as LucideImage, Sparkles } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import logger from '@/utils/logger';
 
 // Importar componentes con lazy loading
@@ -47,8 +48,14 @@ const Home = memo(function Home() {
       <header className="w-full max-w-6xl mx-auto mb-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 relative">
+              <Image 
+                src="/pink-flower.png" 
+                alt="FlorkaFun Logo" 
+                width={32} 
+                height={32} 
+                className="rounded-lg"
+              />
             </div>
             <h1 className="text-2xl font-bold gradient-text">FlorkaFun Token Creator</h1>
           </div>
@@ -58,7 +65,7 @@ const Home = memo(function Home() {
               href={"/mytokens"}
               prefetch={true}
             >
-              <Image className="w-4 h-4 mr-2" />
+              <LucideImage className="w-4 h-4 mr-2" />
               Your Assets
             </Link>
           </nav>
@@ -106,8 +113,14 @@ const Home = memo(function Home() {
       <footer className="w-full max-w-6xl mx-auto mt-16 pb-8 border-t border-gray-800 pt-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-6 h-6 relative">
+              <Image 
+                src="/pink-flower.png" 
+                alt="FlorkaFun Logo" 
+                width={24} 
+                height={24} 
+                className="rounded-lg"
+              />
             </div>
             <span className="text-lg font-semibold gradient-text">FlorkaFun Token Creator</span>
           </div>
