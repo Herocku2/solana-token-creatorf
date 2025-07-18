@@ -48,13 +48,14 @@ const Home = memo(function Home() {
       <header className="w-full max-w-6xl mx-auto mb-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 relative">
+            <div className="w-8 h-8 flex items-center justify-center">
               <Image 
                 src="/pink-flower.png" 
                 alt="FlorkaFun Logo" 
-                width={32} 
-                height={32} 
-                className="rounded-lg"
+                width={28} 
+                height={28} 
+                className="object-contain"
+                priority
               />
             </div>
             <h1 className="text-2xl font-bold gradient-text">FlorkaFun Token Creator</h1>
@@ -113,13 +114,14 @@ const Home = memo(function Home() {
       <footer className="w-full max-w-6xl mx-auto mt-16 pb-8 border-t border-gray-800 pt-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 relative">
+            <div className="w-6 h-6 flex items-center justify-center">
               <Image 
                 src="/pink-flower.png" 
                 alt="FlorkaFun Logo" 
-                width={24} 
-                height={24} 
-                className="rounded-lg"
+                width={20} 
+                height={20} 
+                className="object-contain"
+                priority
               />
             </div>
             <span className="text-lg font-semibold gradient-text">FlorkaFun Token Creator</span>
