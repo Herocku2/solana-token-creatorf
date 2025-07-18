@@ -164,7 +164,7 @@ export default function TokenForm() {
       let ImageCID;
       try {
         const imageName = `image-${formData.name.replace(/[^a-zA-Z0-9]/g, '')}-${formData.symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
-        ImageCID = await uploadImageToPinata(imageName, formData.image);
+        ImageCID = await uploadImageToS3(imageName, formData.image);
         if (!ImageCID) throw new Error("Failed to upload image");
       } catch (uploadError) {
         logger.error("Image upload error", { error: uploadError });
@@ -184,7 +184,7 @@ export default function TokenForm() {
         };
         
         const metadataName = `metadata-${formData.name.replace(/[^a-zA-Z0-9]/g, '')}-${formData.symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
-        metadataCID = await uploadJsonToPinata(tokenMetadata, metadataName);
+        metadataCID = await uploadJsonToS3(tokenMetadata, metadataName);
         if (!metadataCID) throw new Error("Failed to upload metadata");
       } catch (metadataError) {
         logger.error("Metadata upload error", { error: metadataError });

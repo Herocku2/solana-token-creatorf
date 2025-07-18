@@ -30,7 +30,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.solana.com https://api.mainnet-beta.solana.com https://api.devnet.solana.com https://s3.filebase.com https://*.vercel.app; img-src 'self' data: https://*.filebase.io blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none';"
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.solana.com wss://*.solana.com https://api.mainnet-beta.solana.com wss://api.mainnet-beta.solana.com https://api.devnet.solana.com wss://api.devnet.solana.com https://s3.filebase.com https://*.vercel.app wss://*.vercel.app ws://localhost:* wss://localhost:* https://solana-devnet-rpc.allthatnode.com wss://solana-devnet-rpc.allthatnode.com https://solana-mainnet-rpc.allthatnode.com wss://solana-mainnet-rpc.allthatnode.com; img-src 'self' data: https://*.filebase.io blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none';"
           },
           {
             key: 'X-XSS-Protection',
