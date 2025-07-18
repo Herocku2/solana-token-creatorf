@@ -101,6 +101,21 @@ const Home = memo(function Home() {
           <TokenForm />
         </Suspense>
       </div>
+
+      {/* Footer */}
+      <footer className="w-full max-w-6xl mx-auto mt-16 pb-8 border-t border-gray-800 pt-8">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center gap-2 mb-4 md:mb-0">
+            <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-semibold gradient-text">FlorkaFun Token Creator</span>
+          </div>
+          <div className="text-gray-400 text-sm">
+            © {new Date().getFullYear()} FlorkaFun. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </main>
   );
 });
