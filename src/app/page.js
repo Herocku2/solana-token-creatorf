@@ -49,13 +49,12 @@ const Home = memo(function Home() {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center">
-              <Image 
+              <img 
                 src="/pink-flower.png" 
                 alt="FlorkaFun Logo" 
                 width={28} 
                 height={28} 
                 className="object-contain"
-                priority
               />
             </div>
             <h1 className="text-2xl font-bold gradient-text">FlorkaFun Token Creator</h1>
@@ -115,13 +114,12 @@ const Home = memo(function Home() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <div className="w-6 h-6 flex items-center justify-center">
-              <Image 
+              <img 
                 src="/pink-flower.png" 
                 alt="FlorkaFun Logo" 
                 width={20} 
                 height={20} 
                 className="object-contain"
-                priority
               />
             </div>
             <span className="text-lg font-semibold gradient-text">FlorkaFun Token Creator</span>
