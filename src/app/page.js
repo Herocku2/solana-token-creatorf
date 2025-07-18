@@ -112,7 +112,7 @@ const Home = memo(function Home() {
             <span className="text-lg font-semibold gradient-text">FlorkaFun Token Creator</span>
           </div>
           <div className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} FlorkaFun. All rights reserved.
+            © 2025 FlorkaFun. All rights reserved.
           </div>
         </div>
       </footer>
