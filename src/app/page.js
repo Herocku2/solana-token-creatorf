@@ -49,7 +49,7 @@ const Home = memo(function Home() {
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center">
               <img 
-                src="/flower-logo.png" 
+                src="/flower-logo.svg" 
                 alt="FlorkaFun Logo" 
                 width={28} 
                 height={28} 
@@ -114,7 +114,7 @@ const Home = memo(function Home() {
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <div className="w-6 h-6 flex items-center justify-center">
               <img 
-                src="/flower-logo.png" 
+                src="/flower-logo.svg" 
                 alt="FlorkaFun Logo" 
                 width={20} 
                 height={20} 

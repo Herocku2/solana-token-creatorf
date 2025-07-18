@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/flower-logo.png" />
+        <link rel="icon" href="/flower-logo.svg" />
       </head>
       <body className={montserrat.variable}>
         <ClientEntrypoint>
