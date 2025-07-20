@@ -4,6 +4,7 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { Wifi, Globe } from "lucide-react";
 import { useCallback, memo, useState } from "react";
 import { getLatestBlockhash } from "@/utils/solanaRpcService";
+import { getLatestBlockhash as getMainnetBlockhash } from "@/utils/solanaMainnetService";
 import { SOLANA_ENDPOINTS } from "@/utils/solanaEndpoints";
 
 // Memoized component to prevent unnecessary re-renders
@@ -42,20 +43,13 @@ const NetworkChanger = memo(function NetworkChanger() {
     if (network !== WalletAdapterNetwork.Mainnet) {
       try {
         setIsLoading(true);
-        // Verificar la conexión a través del proxy antes de cambiar la red
-        const endpoint = SOLANA_ENDPOINTS[WalletAdapterNetwork.Mainnet][0];
-        await getLatestBlockhash(endpoint);
+        // Verificar la conexión a través del proxy específico para Mainnet
+        await getMainnetBlockhash();
         setNetwork(WalletAdapterNetwork.Mainnet);
       } catch (error) {
         console.error("Error connecting to Mainnet:", error);
-        // Intentar con el siguiente endpoint si falla
-        try {
-          const fallbackEndpoint = SOLANA_ENDPOINTS[WalletAdapterNetwork.Mainnet][1];
-          await getLatestBlockhash(fallbackEndpoint);
-          setNetwork(WalletAdapterNetwork.Mainnet);
-        } catch (fallbackError) {
-          console.error("Failed to connect to Mainnet fallback:", fallbackError);
-        }
+        // Mostrar un mensaje de error al usuario
+        alert("No se pudo conectar a la red principal de Solana. Por favor, inténtelo de nuevo más tarde.");
       } finally {
         setIsLoading(false);
       }
