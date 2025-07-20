@@ -66,6 +66,11 @@
     100% { transform: rotate(360deg); }
   }
   
+  /* Slow spin animation for flower */
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+  
   /* Lazy loading container */
   .lazy-container {
     @apply opacity-0 transition-opacity duration-300;

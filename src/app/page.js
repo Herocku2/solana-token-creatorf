@@ -49,11 +49,12 @@ const Home = memo(function Home() {
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center">
               <img 
-                src="/flower-logo.svg" 
+                src="/pink-spinning-flower.svg" 
                 alt="FlorkaFun Logo" 
                 width={28} 
                 height={28} 
-                className="object-contain"
+                className="object-contain animate-spin-slow"
+                style={{ animation: 'spin 8s linear infinite' }}
               />
             </div>
             <h1 className="text-2xl font-bold gradient-text">FlorkaFun Token Creator</h1>
