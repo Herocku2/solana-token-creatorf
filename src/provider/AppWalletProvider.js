@@ -50,11 +50,26 @@ export default function AppWalletProvider({ children }) {
     localStorage.setItem('solana-network', newNetwork);
   }, []);
 
-  // Memoized endpoint based on selected network with fallback
-  const endpoint = useMemo(() => {
-    // Usar el primer endpoint de la lista como predeterminado
-    // El sistema de fallback se encargará de cambiar si es necesario
-    return SOLANA_ENDPOINTS[network]?.[0] || clusterApiUrl(network);
+  // Estado para almacenar el endpoint actual
+  const [endpoint, setEndpoint] = useState(SOLANA_ENDPOINTS[network]?.[0] || clusterApiUrl(network));
+  
+  // Efecto para actualizar el endpoint cuando cambia la red
+  useEffect(() => {
+    const updateEndpoint = async () => {
+      try {
+        // Intentar obtener el mejor endpoint disponible
+        const bestEndpoint = await getBestEndpoint(network);
+        setEndpoint(bestEndpoint);
+        console.log(`Using best endpoint for ${network}:`, bestEndpoint);
+      } catch (error) {
+        // Si falla, usar el primer endpoint de la lista
+        const fallbackEndpoint = SOLANA_ENDPOINTS[network]?.[0] || clusterApiUrl(network);
+        setEndpoint(fallbackEndpoint);
+        console.warn(`Failed to get best endpoint, using fallback:`, fallbackEndpoint);
+      }
+    };
+    
+    updateEndpoint();
   }, [network]);
 
   // Memoized wallet adapters - only recreate when network changes
