@@ -9,8 +9,8 @@ export async function POST(request) {
     // Obtener el cuerpo de la solicitud
     const body = await request.json();
     
-    // Usar el endpoint de Helius para la Mainnet
-    const heliusApiKey = process.env.HELIUS_API_KEY;
+    // Usar directamente la API key de Helius para la Mainnet
+    const heliusApiKey = '044ba4dd-9e91-4be2-b456-27a1ed8eff94';
     const rpcEndpoint = `https://mainnet.helius-rpc.com/?api-key=${heliusApiKey}`;
     
     // Construir la solicitud RPC

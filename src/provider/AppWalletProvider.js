@@ -57,15 +57,24 @@ export default function AppWalletProvider({ children }) {
   useEffect(() => {
     const updateEndpoint = async () => {
       try {
-        // Intentar obtener el mejor endpoint disponible
-        const bestEndpoint = await getBestEndpoint(network);
-        setEndpoint(bestEndpoint);
-        console.log(`Using best endpoint for ${network}:`, bestEndpoint);
+        if (network === WalletAdapterNetwork.Mainnet) {
+          // Para Mainnet, usar directamente el endpoint de Helius
+          const heliusEndpoint = 'https://mainnet.helius-rpc.com/?api-key=044ba4dd-9e91-4be2-b456-27a1ed8eff94';
+          setEndpoint(heliusEndpoint);
+          console.log(`Using Helius endpoint for Mainnet:`, heliusEndpoint);
+        } else {
+          // Para Devnet, usar el endpoint de Devnet
+          const devnetEndpoint = 'https://api.devnet.solana.com';
+          setEndpoint(devnetEndpoint);
+          console.log(`Using endpoint for Devnet:`, devnetEndpoint);
+        }
       } catch (error) {
-        // Si falla, usar el primer endpoint de la lista
-        const fallbackEndpoint = SOLANA_ENDPOINTS[network]?.[0] || clusterApiUrl(network);
+        // Si falla, usar el endpoint por defecto
+        const fallbackEndpoint = network === WalletAdapterNetwork.Mainnet 
+          ? 'https://mainnet.helius-rpc.com/?api-key=044ba4dd-9e91-4be2-b456-27a1ed8eff94' 
+          : 'https://api.devnet.solana.com';
         setEndpoint(fallbackEndpoint);
-        console.warn(`Failed to get best endpoint, using fallback:`, fallbackEndpoint);
+        console.warn(`Failed to set endpoint, using fallback:`, fallbackEndpoint);
       }
     };
     

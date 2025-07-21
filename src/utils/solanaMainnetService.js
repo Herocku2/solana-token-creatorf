@@ -4,10 +4,12 @@
  */
 export async function callSolanaMainnet(method, params) {
   try {
+    // Usar directamente el endpoint de Helius a través del proxy
     const response = await fetch('/api/proxy-solana', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-Use-Helius': 'true', // Indicar que se debe usar Helius
       },
       body: JSON.stringify({
         jsonrpc: '2.0',

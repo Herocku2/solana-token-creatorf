@@ -43,10 +43,9 @@ const NetworkChanger = memo(function NetworkChanger() {
     if (network !== WalletAdapterNetwork.Mainnet) {
       try {
         setIsLoading(true);
-        // Verificar la conexión a través del proxy específico para Mainnet
-        const result = await getMainnetBlockhash();
-        console.log("Mainnet connection successful via proxy:", result);
+        // Cambiar directamente a Mainnet sin verificación previa
         setNetwork(WalletAdapterNetwork.Mainnet);
+        console.log("Switched to Mainnet with Helius RPC");
       } catch (error) {
         console.error("Error connecting to Mainnet:", error);
         // Mostrar un mensaje de error al usuario
