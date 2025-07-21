@@ -2,6 +2,8 @@
 
 Solana Token Creator is a web application that allows users to create their very own Solana-based tokens or meme coins with ease. By simply connecting their wallets, users can customize their token's parameters such as name, symbol, supply, decimals, and description, as well as upload a token logo. Additionally, users have the flexibility to choose token metadata options, like setting it as mutable, or renouncing the mint and freeze authority. Best of all, token creation is free aside from the usual transaction fees on the Solana network.
 
+**Note:** Esta versión soporta números grandes para el suministro de tokens.
+
 With this tool, you can now also **view your assets (tokens and NFTs)** on both the Solana Devnet and Mainnet after connecting your wallet.
 
 ## Demo
