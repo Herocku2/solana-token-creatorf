@@ -150,13 +150,31 @@ export default function TokenForm() {
       const userNetwork = umi.rpc.getCluster();
       setUserCluster(userNetwork);
       
-      // Calculate supply with safe conversion
-      const finalSupply = Number.isFinite(formData.supply) && Number.isFinite(formData.decimals) 
-        ? Number(formData.supply) * 10 ** Number(formData.decimals)
-        : 0;
-      
-      if (finalSupply <= 0) {
-        throw new Error("Invalid supply calculation");
+      // Calculate supply with BigInt to handle large numbers safely
+      let finalSupply;
+      try {
+        // Validate inputs
+        if (!Number.isFinite(Number(formData.supply)) || !Number.isFinite(Number(formData.decimals))) {
+          throw new Error("Supply or decimals is not a valid number");
+        }
+        
+        if (Number(formData.supply) <= 0) {
+          throw new Error("Supply must be greater than 0");
+        }
+        
+        // Use BigInt for calculation to handle large numbers
+        const supplyBigInt = BigInt(Math.floor(Number(formData.supply)));
+        const decimalMultiplier = BigInt(10) ** BigInt(Number(formData.decimals));
+        finalSupply = supplyBigInt * decimalMultiplier;
+        
+        // Convert back to number for compatibility with the rest of the code
+        // This is safe because we'll use the BigInt value directly for the blockchain operation
+        if (finalSupply <= BigInt(0)) {
+          throw new Error("Invalid supply calculation");
+        }
+      } catch (error) {
+        logger.error("Supply calculation error", { error, supply: formData.supply, decimals: formData.decimals });
+        throw new Error("Invalid supply calculation: " + error.message);
       }
 
       // Upload image with proper error handling
