@@ -3,5 +3,16 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "connect-src 'self' https://mainnet.helius-rpc.com https://solana-mainnet.g.alchemy.com https://*.solana.com https://api.pinata.cloud https://s3.filebase.com https://*.vercel.app wss://*.vercel.app https://*.allthatnode.com wss://localhost:* https://*.solana-devnet-rpc.allthatnode.com https://*.solana-mainnet-rpc.allthatnode.com https://*.rpc.ankr.com https://*.pinata.cloud;"
+        }
+      ]
+    }
+  ]
 }
