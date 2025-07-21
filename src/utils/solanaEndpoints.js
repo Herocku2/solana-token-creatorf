@@ -15,6 +15,7 @@ export const SOLANA_ENDPOINTS = {
   [WalletAdapterNetwork.Mainnet]: [
     process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC,
     'https://mainnet.helius-rpc.com/?api-key=044ba4dd-9e91-4be2-b456-27a1ed8eff94',
+    process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC || 'https://solana-mainnet.g.alchemy.com/v2/yEHtSFoVasqeIsk_iF0pT',
     'https://solana-api.projectserum.com',
     'https://api.mainnet-beta.solana.com',
   ],
