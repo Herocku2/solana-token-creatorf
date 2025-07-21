@@ -44,7 +44,8 @@ const NetworkChanger = memo(function NetworkChanger() {
       try {
         setIsLoading(true);
         // Verificar la conexión a través del proxy específico para Mainnet
-        await getMainnetBlockhash();
+        const result = await getMainnetBlockhash();
+        console.log("Mainnet connection successful via proxy:", result);
         setNetwork(WalletAdapterNetwork.Mainnet);
       } catch (error) {
         console.error("Error connecting to Mainnet:", error);
