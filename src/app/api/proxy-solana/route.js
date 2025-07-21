@@ -9,9 +9,9 @@ export async function POST(request) {
     // Obtener el cuerpo de la solicitud
     const body = await request.json();
     
-    // Usar un endpoint confiable para la Mainnet
-    // Ankr es generalmente más confiable que otros endpoints públicos
-    const rpcEndpoint = 'https://rpc.ankr.com/solana';
+    // Usar el endpoint de Helius para la Mainnet
+    const heliusApiKey = process.env.HELIUS_API_KEY;
+    const rpcEndpoint = `https://mainnet.helius-rpc.com/?api-key=${heliusApiKey}`;
     
     // Construir la solicitud RPC
     const rpcRequest = body;

@@ -13,10 +13,10 @@ export const SOLANA_ENDPOINTS = {
     'https://solana-devnet-rpc.allthatnode.com',
   ],
   [WalletAdapterNetwork.Mainnet]: [
-    process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC || 'https://rpc.ankr.com/solana',
+    process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC,
+    'https://mainnet.helius-rpc.com/?api-key=044ba4dd-9e91-4be2-b456-27a1ed8eff94',
     'https://solana-api.projectserum.com',
     'https://api.mainnet-beta.solana.com',
-    'https://solana-mainnet-rpc.allthatnode.com',
   ],
 };
 
